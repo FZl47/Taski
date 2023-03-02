@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from core.response import Response
-from core.mixins.swagger import SwaggerMixin
+from core.mixins.view.swagger import  SwaggerMixin
 
 
 
@@ -31,6 +31,7 @@ class Index(SwaggerMixin, APIView):
     }
 
     permission_classes = (IsAuthenticated,)
+
 
     def post(self, request):
         """
