@@ -91,3 +91,10 @@ class InvalidField(Exception):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "field_not_valid"
     default_detail = _execption_detail(status_code,['Field is invalid'])
+
+
+class FieldRequired(Exception):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "field_required"
+    default_detail = _execption_detail(status_code,['Field is required'])
+
