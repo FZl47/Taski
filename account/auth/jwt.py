@@ -12,47 +12,25 @@ from core import exceptions
 class JWTAuthentication(_JWTAuthentication):
     """
         Custom JWT autnetication
-        just exceptions changed !
     """
-    www_authenticate_realm = "api"
-    media_type = "application/json"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user_model = get_user_model()
 
     def authenticate(self, request):
-
         header = self.get_header(request)
+
         if header is None:
-            raise exceptions.AuthenticationNotProvided
+            return None
+            # raise exceptions.AuthenticationNotProvided
 
         raw_token = self.get_raw_token(header)
         if raw_token is None:
-            raise exceptions.AuthenticationNotProvided
+            return None
+            # raise exceptions.AuthenticationNotProvided
 
         validated_token = self.get_validated_token(raw_token)
 
         return self.get_user(validated_token), validated_token
 
-    def authenticate_header(self, request):
-        return '{} realm="{}"'.format(
-            AUTH_HEADER_TYPES[0],
-            self.www_authenticate_realm,
-        )
 
-    def get_header(self, request):
-        """
-        Extracts the header containing the JSON web token from the given
-        request.
-        """
-        header = request.META.get(api_settings.AUTH_HEADER_NAME)
-
-        if isinstance(header, str):
-            # Work around django test client oddness
-            header = header.encode(HTTP_HEADER_ENCODING)
-
-        return header
 
     def get_raw_token(self, header):
         """
@@ -96,8 +74,8 @@ class JWTAuthentication(_JWTAuthentication):
             user_id = validated_token[api_settings.USER_ID_CLAIM]
         except KeyError:
             raise exceptions.InvalidToken(["Token contained no recognizable user identification"])
-
         try:
+
             user = self.user_model.objects.get(**{api_settings.USER_ID_FIELD: user_id})
         except self.user_model.DoesNotExist:
             raise exceptions.AuthenticationFailed(["User not found"])
@@ -106,3 +84,6 @@ class JWTAuthentication(_JWTAuthentication):
             raise exceptions.AuthenticationFailed(["User is inactive"])
 
         return user
+
+
+
