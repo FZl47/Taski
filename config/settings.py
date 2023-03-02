@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'core',
     'account',
+    'core',
     'public'
 ]
 
@@ -121,6 +122,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = 'media/'
+
+STATIC_ROOT = BASE_DIR / 'static'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -132,7 +137,22 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'account.auth.jwt.JWTAuthentication',
     ],
+    # 'DEFAULT_PARSER_CLASSES': [
+    #     'rest_framework.parsers.JSONParser',
+    #     'rest_framework.parsers.FormParser'
+    # ],
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
+
+AUTH_USER_MODEL  = 'account.User'
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+}
+
+APPEND_SLASH = False
 
 # drf-yasg
 SWAGGER_SETTINGS = {
@@ -147,3 +167,11 @@ SWAGGER_SETTINGS = {
 
 API_VERSION = 'v1'
 NAME_POINT_API = f'api/{API_VERSION}'
+
+IMAGES_FORMAT = [
+    'jpg',
+    'png',
+    'gif'
+]
+
+
