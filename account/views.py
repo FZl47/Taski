@@ -115,4 +115,6 @@ class AccessToken(SwaggerMixin, APIView):
             s.is_valid()
         except:
             raise exceptions.InvalidToken(['Refresh token is invalid'])
+        if s.is_valid() == False:
+            raise exceptions.FieldRequired(['Field refresh is required'])
         return Response(serializers.TokenAccessSerializer(s.validated_data).data)
