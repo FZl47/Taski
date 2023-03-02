@@ -4,15 +4,15 @@ from django.conf import settings
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from core.mixins.view import swagger
 
 def path(pth, *args, **kwargs):
     return _path(f"{settings.NAME_POINT_API}/{pth}", *args, **kwargs)
 
 
 urlpatterns = [
-    path('u/', include('account.urls')),
-    path('', include('public.urls')),
+    path('u/', include('account.urls',namespace='account')),
+    path('', include('public.urls',namespace='public')),
     path('admin/', admin.site.urls),
 ]
 
@@ -37,5 +37,4 @@ urlpatterns.extend([
 ])
 
 # Init Swagger(Drf-yasg)
-from core.mixins import swagger
 swagger._init()
