@@ -24,10 +24,55 @@ class TokensSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'image', 'email', 'password')
+        fields = ('first_name', 'last_name', 'email', 'password')
+
+    def create(self, validated_data):
+        user = models.User(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = ('first_name', 'last_name', 'last_login')
+        extra_kwargs = {
+            'first_name':{
+                'required':False
+            },
+            'last_name': {
+                'required': False
+            },
+            'image': {
+                'required': False
+            },
+            'last_login': {
+                'required': False
+            }
+        }
+
+class UserUpdateImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.User
+        fields = ('image',)
+
+
+class UserDeleteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.User
+        fields = ('password',)
+
+
 
 
 class UserBasicSerializer(TokensSerializer, serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'image', 'email', 'access', 'refresh')
+        fields = ('first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh')
