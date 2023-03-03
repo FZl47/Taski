@@ -98,3 +98,9 @@ class FieldRequired(Exception):
     default_code = "field_required"
     default_detail = _execption_detail(status_code,['Field is required'])
 
+
+class UserNotFound(Exception):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_code = "user_not_found"
+    default_detail = _execption_detail(status_code,['User not found'])
+
