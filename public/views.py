@@ -35,12 +35,12 @@ class Index(SwaggerMixin, APIView):
 
     def post(self, request):
         """
-        If serializer_class is set, use it directly. Otherwise get the class from settings.
+            Test view
         """
         return Response('Hi')
 
     def get(self, request):
         """
-        If serializer_class is set, use iwadwadt directly. Otherwise get the class from settings.
+            Test view
         """
         return Response('Hi')
