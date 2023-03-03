@@ -35,8 +35,10 @@ class RemovePastFileMixin:
 
     def delete_file(self,address):
         address = os.path.join(settings.MEDIA_ROOT,address)
-        if os.path.exists(address):
-            os.remove(address)
-        else:
-            # File does not exist
-            pass
+        try:
+            if os.path.exists(address):
+                os.remove(address)
+            else:
+                # File does not exist
+                pass
+        except:pass
