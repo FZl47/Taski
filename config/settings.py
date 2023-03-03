@@ -44,9 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'account',
     'core',
-    'public'
+    'public',
+    'account',
+    'task'
 ]
 
 MIDDLEWARE = [
@@ -147,8 +148,8 @@ REST_FRAMEWORK = {
         'account.auth.jwt.JWTAuthentication',
     ],
     # 'DEFAULT_PARSER_CLASSES': [
-    #     'rest_framework.parsers.JSONParser',
-    #     'rest_framework.parsers.FormParser'
+    #     # 'rest_framework.parsers.JSONParser'
+    #     # 'rest_framework.parsers.FormParser'
     # ],
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
