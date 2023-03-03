@@ -40,7 +40,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'last_login')
+        fields = ('first_name', 'last_name', 'image', 'last_login')
         extra_kwargs = {
             'first_name':{
                 'required':False
@@ -56,11 +56,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             }
         }
 
-class UserUpdateImageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.User
-        fields = ('image',)
+# class UserUpdateImageSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = models.User
+#         fields = ('image',)
 
 
 class UserDeleteSerializer(serializers.ModelSerializer):

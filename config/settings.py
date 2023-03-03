@@ -185,3 +185,7 @@ IMAGES_FORMAT = [
 ]
 
 
+REDIS_CONFIG = {
+    'host': 'localhost',
+    'port': '6379'
+}

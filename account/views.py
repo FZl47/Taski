@@ -142,7 +142,7 @@ class UserUpdate(SwaggerMixin, APIView):
     }
 
     permission_classes = (permissions.IsAuthenticated,)
-
+    parser_classes = (parsers.FormParser,)
     def put(self, request):
         usr = request.user
         s = serializers.UserUpdateSerializer(usr,data=request.POST)
@@ -154,33 +154,33 @@ class UserUpdate(SwaggerMixin, APIView):
         return Response(serializers.UserUpdateSerializer(usr).data)
 
 
-class UserUpdateImage(SwaggerMixin, APIView):
-    SWAGGER = {
-        'tags': ['Account'],
-        'methods': {
-            'put': {
-                'title': 'Update user image',
-                'description': 'Update user image information',
-                'request_body': serializers.UserUpdateImageSerializer,
-                'responses': {
-                    200: serializers.UserUpdateImageSerializer,
-                },
-            },
-        }
-    }
-
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = (parsers.MultiPartParser,)
-
-    def put(self, request):
-        usr = request.user
-        s = serializers.UserUpdateImageSerializer(usr,data=request.FILES)
-        is_valid = s.is_valid()
-        if is_valid == False:
-            raise exceptions.BadRequest
-        else:
-            s.update(usr,s.validated_data)
-        return Response(serializers.UserUpdateImageSerializer(usr).data)
+# class UserUpdateImage(SwaggerMixin, APIView):
+#     SWAGGER = {
+#         'tags': ['Account'],
+#         'methods': {
+#             'put': {
+#                 'title': 'Update user image',
+#                 'description': 'Update user image information',
+#                 'request_body': serializers.UserUpdateImageSerializer,
+#                 'responses': {
+#                     200: serializers.UserUpdateImageSerializer,
+#                 },
+#             },
+#         }
+#     }
+#
+#     permission_classes = (permissions.IsAuthenticated,)
+#     parser_classes = (parsers.MultiPartParser,)
+#
+#     def put(self, request):
+#         usr = request.user
+#         s = serializers.UserUpdateImageSerializer(usr,data=request.FILES)
+#         is_valid = s.is_valid()
+#         if is_valid == False:
+#             raise exceptions.BadRequest
+#         else:
+#             s.update(usr,s.validated_data)
+#         return Response(serializers.UserUpdateImageSerializer(usr).data)
 
 
 class UserDelete(SwaggerMixin, APIView):

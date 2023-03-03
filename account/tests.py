@@ -53,23 +53,23 @@ class AccountTest(APITestCase):
             'last_name': 'Momeni updated !',
             'last_login': utils.get_datetime_f()
         }
-        req = self.client.put(reverse('account:update_user'), data)
+        req = self.client.put(reverse('account:update_user'), data,content_type='application/x-www-form-urlencoded')
         self.assertEqual(req.status_code, 200)
 
-    def test_update_user_image(self):
-        """
-            This func made conflit with media file user with id "1"
-            Because databases are different but media files are not
-        """
-        # usr = self.create_user()
-        # self.authenticate_user(usr)
-        # test_file = urllib.request.urlopen("https://freepngimg.com/thumb/python_logo/5-2-python-logo-png-image.png")
-        # data = {
-        #     'image': File(open('pic.png','rb'))
-        # }
-        # req = self.client.put(reverse('account:update_user_image'),data)
-        # self.assertEqual(req.status_code,200)
-        pass
+    # def test_update_user_image(self):
+    #     """
+    #         This func made conflit with media file user with id "1"
+    #         Because databases are different but media files are not
+    #     """
+    #     # usr = self.create_user()
+    #     # self.authenticate_user(usr)
+    #     # test_file = urllib.request.urlopen("https://freepngimg.com/thumb/python_logo/5-2-python-logo-png-image.png")
+    #     # data = {
+    #     #     'image': File(open('pic.png','rb'))
+    #     # }
+    #     # req = self.client.put(reverse('account:update_user_image'),data)
+    #     # self.assertEqual(req.status_code,200)
+    #     pass
 
     def test_delete_user(self):
         usr = self.create_user()
@@ -79,3 +79,4 @@ class AccountTest(APITestCase):
         }
         req = self.client.delete(reverse('account:delete_user'), data)
         self.assertEqual(req.status_code, 200)
+
