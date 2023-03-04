@@ -40,9 +40,9 @@ class Register(SwaggerMixin, APIView):
     }
 
     permission_classes = (permissions.AllowAny,)
-
+    parser_classes = (parsers.MultiPartParser,)
     def post(self, request):
-        s = serializers.UserRegisterSerializer(data=request.POST)
+        s = serializers.UserRegisterSerializer(data=request.data)
         user = None
         if s.is_valid():
             # save new user
@@ -67,7 +67,11 @@ class Login(SwaggerMixin, APIView):
                 type=openapi.TYPE_STRING,
                 description='your password'
             )
-        }
+        },
+        required=[
+            'username',
+            'password'
+        ]
     )
 
     SWAGGER = {
@@ -87,7 +91,7 @@ class Login(SwaggerMixin, APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        data = request.POST
+        data = request.data
         email = data.get('username')
         password = data.get('password')
         try:
@@ -126,7 +130,7 @@ class AccessToken(SwaggerMixin, APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        s = TokenRefreshSerializer(data=request.POST)
+        s = TokenRefreshSerializer(data=request.data)
         try:
             is_valid = s.is_valid()
         except:
@@ -152,10 +156,10 @@ class UserUpdate(SwaggerMixin, APIView):
     }
 
     permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = (parsers.FormParser,)
+    parser_classes = (parsers.MultiPartParser,)
     def put(self, request):
         usr = request.user
-        s = serializers.UserUpdateSerializer(usr,data=request.POST)
+        s = serializers.UserUpdateSerializer(usr,data=request.data)
         is_valid = s.is_valid()
         if is_valid == False:
             raise exceptions.BadRequest
@@ -164,33 +168,6 @@ class UserUpdate(SwaggerMixin, APIView):
         return Response(serializers.UserUpdateSerializer(usr).data)
 
 
-# class UserUpdateImage(SwaggerMixin, APIView):
-#     SWAGGER = {
-#         'tags': ['Account'],
-#         'methods': {
-#             'put': {
-#                 'title': 'Update user image',
-#                 'description': 'Update user image information',
-#                 'request_body': serializers.UserUpdateImageSerializer,
-#                 'responses': {
-#                     200: serializers.UserUpdateImageSerializer,
-#                 },
-#             },
-#         }
-#     }
-#
-#     permission_classes = (permissions.IsAuthenticated,)
-#     parser_classes = (parsers.MultiPartParser,)
-#
-#     def put(self, request):
-#         usr = request.user
-#         s = serializers.UserUpdateImageSerializer(usr,data=request.FILES)
-#         is_valid = s.is_valid()
-#         if is_valid == False:
-#             raise exceptions.BadRequest
-#         else:
-#             s.update(usr,s.validated_data)
-#         return Response(serializers.UserUpdateImageSerializer(usr).data)
 
 
 class ResetPassword(SwaggerMixin, APIView):
@@ -216,7 +193,7 @@ class ResetPassword(SwaggerMixin, APIView):
             This endpoint create a random code
             and set it to redis and sent to email.
         """
-        s = serializers.UserResetPasswordSerializer(data=request.POST)
+        s = serializers.UserResetPasswordSerializer(data=request.data)
         if s.is_valid():
             email = s.validated_data['email']
             key_redis = USER_CONF['KEY_REDIS_RESET_PASSWORD'].format(email)
@@ -261,7 +238,7 @@ class ResetPasswordCode(SwaggerMixin, APIView):
             This endpoint get code reset
             and check and set new password.
         """
-        s = serializers.UserResetPasswordCodeSerializer(data=request.POST)
+        s = serializers.UserResetPasswordCodeSerializer(data=request.data)
         if s.is_valid():
             email = s.validated_data['email']
             code = s.validated_data['code']
@@ -311,7 +288,7 @@ class UserDelete(SwaggerMixin, APIView):
 
     def delete(self, request):
         usr = request.user
-        s = serializers.UserDeleteSerializer(usr,data=request.POST)
+        s = serializers.UserDeleteSerializer(usr,data=request.data)
         is_valid = s.is_valid()
         # Check password user
         if is_valid and usr.check_password(s.validated_data['password']):
