@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.urls import path as _path, re_path, include
 from django.conf import settings
-from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.conf.urls.static import static
+from rest_framework import permissions
 from core.mixins.view import swagger
+
 
 def path(pth, *args, **kwargs):
     return _path(f"{settings.NAME_POINT_API}/{pth}", *args, **kwargs)
@@ -36,5 +38,12 @@ urlpatterns.extend([
     re_path(r'redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ])
 
+# Serve media and static files in Develop
+if settings.DEBUG:
+    urlpatterns = urlpatterns + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 # Init Swagger(Drf-yasg)
 swagger._init()
+
+
