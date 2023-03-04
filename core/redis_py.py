@@ -48,7 +48,10 @@ def set_value_expire(key, value, seconds):
 
 
 def get_value(key):
-    return unpack_data(REDIS.get(key))
+    val = REDIS.get(key)
+    if val:
+        return unpack_data(val)
+    return None
 
 
 def remove_key(key):
