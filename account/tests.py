@@ -71,6 +71,31 @@ class AccountTest(APITestCase):
     #     # self.assertEqual(req.status_code,200)
     #     pass
 
+    def test_reset_password(self):
+        usr = self.create_user()
+        data = {
+            'email': 'test@gmail.com'
+        }
+        req = self.client.post(reverse('account:reset_password'), data)
+        self.assertEqual(req.status_code, 200)
+
+
+    def test_reset_password_code(self):
+        """
+            This test need code sended to email
+            so this is useless
+        """
+        # usr = self.create_user()
+        # data = {
+        #     'email': 'test@gmail.com',
+        #     'code':'...',
+        #     'new_password':'NewPassword'
+        # }
+        # req = self.client.post(reverse('account:reset_password_code'), data)
+        # self.assertEqual(req.status_code, 200)
+        pass
+
+
     def test_delete_user(self):
         usr = self.create_user()
         self.authenticate_user(usr)

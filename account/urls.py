@@ -8,6 +8,8 @@ urlpatterns = [
     path('login',views.Login.as_view(),name='login'),
     path('update-user',views.UserUpdate.as_view(),name='update_user'),
     # path('update-user-image',views.UserUpdateImage.as_view(),name='update_user_image'),
+    path('reset-password',views.ResetPassword.as_view(),name='reset_password'),
+    path('reset-password-code',views.ResetPasswordCode.as_view(),name='reset_password_code'),
     path('delete-user',views.UserDelete.as_view(),name='delete_user'),
     path('token/refresh',views.AccessToken.as_view(),name='access_token'),
 ]

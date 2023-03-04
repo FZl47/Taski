@@ -11,7 +11,17 @@ from core.mixins.view.swagger import SwaggerMixin
 from core import exceptions
 from core.response import Response
 from core import utils
+from core import redis_py
 from . import serializers
+from . import models
+
+
+
+USER_CONF = {
+    "TIMEOUT_RESET_PASSWORD_CODE": 400, # Second
+    "KEY_REDIS_RESET_PASSWORD":"RESET_PASSWORD_{}"
+}
+
 
 
 class Register(SwaggerMixin, APIView):
@@ -183,6 +193,103 @@ class UserUpdate(SwaggerMixin, APIView):
 #         return Response(serializers.UserUpdateImageSerializer(usr).data)
 
 
+class ResetPassword(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Account'],
+        'methods': {
+            'post': {
+                'title': 'Reset Password',
+                'description': 'Reset password account',
+                'request_body': serializers.UserResetPasswordSerializer,
+                'responses': {
+                    200: openapi.Schema(type=openapi.TYPE_OBJECT,properties={
+                        'message':openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.AllowAny,)
+    def post(self, request):
+        """
+            This endpoint create a random code
+            and set it to redis and sent to email.
+        """
+        s = serializers.UserResetPasswordSerializer(data=request.POST)
+        if s.is_valid():
+            email = s.validated_data['email']
+            key_redis = USER_CONF['KEY_REDIS_RESET_PASSWORD'].format(email)
+            # Check the code has been sent to this email or not
+            past_code = redis_py.get_value(key_redis)
+            if past_code == None:
+                code = utils.random_num()
+                # set code in redis
+                redis_py.set_value_expire(key_redis,code,USER_CONF['TIMEOUT_RESET_PASSWORD_CODE'])
+                # sent code to email in bg proccess
+                subject = 'Reset Password Taski'
+                message_email = "Reset Password Taski : {}".format(code)
+                utils.send_email(subject,message_email,[email])
+                message = 'The password reset code has been sent to your email.'
+            else:
+                raise exceptions.Conflict(['The password reset code has already been sent to you !'])
+            return Response({'message':message})
+        raise exceptions.BadRequest
+
+
+
+class ResetPasswordCode(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Account'],
+        'methods': {
+            'post': {
+                'title': 'Reset Password Code',
+                'description': 'To reset your password, you need to send the code you received from the email to this endpoint',
+                'request_body': serializers.UserResetPasswordCodeSerializer,
+                'responses': {
+                    200: openapi.Schema(type=openapi.TYPE_OBJECT,properties={
+                        'message':openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.AllowAny,)
+    def post(self, request):
+        """
+            This endpoint get code reset
+            and check and set new password.
+        """
+        s = serializers.UserResetPasswordCodeSerializer(data=request.POST)
+        if s.is_valid():
+            email = s.validated_data['email']
+            code = s.validated_data['code']
+            key_redis = USER_CONF['KEY_REDIS_RESET_PASSWORD'].format(email)
+            # Check the code has been sent to this email or not
+            code_redis = redis_py.get_value(key_redis)
+            if code_redis:
+                # check codes
+                if str(code) == str(code_redis):
+                    try:
+                        # get user and set new password
+                        usr = models.User.objects.get(email=email)
+                        s.update(usr,s.validated_data)
+                        message = 'Your password has been successfully changed'
+                        # remove code in redis
+                        redis_py.remove_key(key_redis)
+                    except:
+                        # user not found
+                        raise exceptions.UserNotFound
+                else:
+                    # codes reset not match
+                    raise exceptions.InvalidCode
+            else:
+                # code reset has expired
+                raise exceptions.InvalidCode(['The reset code has expired or invalid !'])
+            return Response({'message':message})
+        raise exceptions.BadRequest(exceptions.serializer_err(s))
+
 class UserDelete(SwaggerMixin, APIView):
     SWAGGER = {
         'tags': ['Account'],
@@ -207,9 +314,9 @@ class UserDelete(SwaggerMixin, APIView):
         s = serializers.UserDeleteSerializer(usr,data=request.POST)
         is_valid = s.is_valid()
         # Check password user
-        if is_valid == False and usr.check_password(s.validated_data['password']):
-            raise exceptions.InvalidField(['Password is incorrect'])
-        else:
+        if is_valid and usr.check_password(s.validated_data['password']):
             # Delete User or anything ..
             usr.delete()
+        else:
+            raise exceptions.InvalidField(['Password is incorrect'])
         return Response({'message':'Bye...'})

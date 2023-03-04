@@ -33,6 +33,14 @@ def get_messages_serializer(errors):
     return [str(err[0]) for err in errors.values()]
 
 
+def serializer_err(serializer):
+    messages = []
+    for err in serializer.errors.items():
+        messages.append(
+            "{} : {}".format(err[0],err[1][0])
+        )
+    return messages
+
 class DetailDictMixin:
     def __init__(self,messages=[],status_code=None,default_code=None):
 
@@ -93,6 +101,12 @@ class InvalidField(Exception):
     default_detail = _execption_detail(status_code,['Field is invalid'])
 
 
+class InvalidCode(Exception):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "code_reset_password_not_valid"
+    default_detail = _execption_detail(status_code,['Code reset password is invalid'])
+
+
 class FieldRequired(Exception):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "field_required"
@@ -103,4 +117,10 @@ class UserNotFound(Exception):
     status_code = status.HTTP_404_NOT_FOUND
     default_code = "user_not_found"
     default_detail = _execption_detail(status_code,['User not found'])
+
+
+class Conflict(Exception):
+    status_code = status.HTTP_409_CONFLICT
+    default_code = "conflict"
+    default_detail = _execption_detail(status_code,['Conflict'])
 
