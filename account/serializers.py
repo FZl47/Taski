@@ -26,14 +26,27 @@ class TokensSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'email', 'password')
+        fields = ('first_name', 'last_name', 'image', 'email', 'password')
+        extra_kwargs = {
+            'image':{
+                'required':False
+            },
+            'password':{
+                'validators':[
+                    MinLengthValidator(8)
+                ]
+            }
+        }
 
     def create(self, validated_data):
         user = models.User(
             email=validated_data['email'],
             first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            last_name=validated_data['last_name']
         )
+        image = validated_data.get('image')
+        if image:
+            user.image = image
         user.set_password(validated_data['password'])
         user.save()
         return user
@@ -58,11 +71,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             }
         }
 
-# class UserUpdateImageSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = models.User
-#         fields = ('image',)
+
 
 
 class UserResetPasswordSerializer(serializers.Serializer):
