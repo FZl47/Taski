@@ -55,6 +55,7 @@ class User(RemovePastFileMixin,AbstractUser):
     last_name = models.CharField(_("last name"), max_length=150)
     email = models.EmailField(_('email address'), unique = True)
     image = models.ImageField(upload_to=upload_image_user,null=True,blank=True)
+    groups_task = models.ManyToManyField('task.Group')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
