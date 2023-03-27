@@ -4,19 +4,16 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-from core import exceptions
+from core import exceptions, validators
 from core.mixins.model.delete_file import RemovePastFileMixin
 
 
-
+@validators.decorators.validator_image_format
 def upload_image_user(instance,path):
     """
         :return src file in media
     """
     instance_id = instance.pk or get_random_string(13)
-    path = str(path).split('.')[-1]
-    if path not in settings.IMAGES_FORMAT:
-        raise exceptions.InvalidFormatFile
     return f"images/users/{instance_id}/{get_random_string(10)}.{path}"
 
 

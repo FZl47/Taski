@@ -3,7 +3,7 @@ from core import validators
 
 
 @validators.decorators.validator_file_format
-def get_src_task_file(instance,path):
+def upload_src_task_file(instance,path):
     """
         :return src task file in media
     """
@@ -36,7 +36,7 @@ class Task(models.Model):
 
 
 class TaskFile(models.Model):
-    file = models.FileField(upload_to=get_src_task_file)
+    file = models.FileField(upload_to=upload_src_task_file)
 
 
 
