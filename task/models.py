@@ -1,5 +1,14 @@
 from django.db import models
+from core import validators
 
+
+@validators.decorators.validator_file_format
+def get_src_task_file(instance,path):
+    """
+        :return src task file in media
+    """
+    instance_id = instance.pk or get_random_string(13)
+    return f"files/task/{instance_id}/{get_random_string(10)}.{path}"
 
 
 class Group(models.Model):
@@ -9,21 +18,7 @@ class Group(models.Model):
 
 class GroupAdmin(models.Model):
     user = models.ForeignKey('account.User',on_delete=models.CASCADE)
-    permissions = models.ManyToManyField('Permission')
 
-
-class Permission(models.Model):
-    PERMISSIONS = (
-        ('add_user','Add User'),
-        ('delete_user','Delete User'),
-        ('create_task','Create Task'),
-        ('edit_task','Edit Task'),
-        ('delete_task','Delete Task'),
-    )
-    name = models.CharField(max_length=20,choices=PERMISSIONS)
-
-    def __str__(self):
-        return self.name
 
 
 class Task(models.Model):
@@ -39,8 +34,9 @@ class Task(models.Model):
     def __str__(self):
         return f"#{self.group_id} - {self.title[:30]}"
 
+
 class TaskFile(models.Model):
-    file = models.FileField()
+    file = models.FileField(upload_to=get_src_task_file)
 
 
 
