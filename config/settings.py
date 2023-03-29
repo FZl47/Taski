@@ -188,6 +188,14 @@ IMAGES_FORMAT = [
     'gif'
 ]
 
+FILES_FORMAT = [
+    *IMAGES_FORMAT,
+    'mp3',
+    'mp4',
+    'zip',
+    'rar'
+]
+
 
 REDIS_CONFIG = {
     'host': 'localhost',
