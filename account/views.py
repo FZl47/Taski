@@ -12,6 +12,7 @@ from core import exceptions
 from core.response import Response
 from core import utils
 from core import redis_py
+from task import models as task_models
 from . import serializers
 from . import models
 
@@ -47,6 +48,9 @@ class Register(SwaggerMixin, APIView):
         if s.is_valid():
             # save new user
             user = s.save()
+            # create a group for user (default group - personal group)
+            group = task_models.Group.objects.create(title='Personal group',owner=user)
+            user.groups_task.add(group)
         else:
             messages = exceptions.get_messages_serializer(s.errors)
             raise exceptions.BadRequest(messages)
@@ -91,13 +95,14 @@ class Login(SwaggerMixin, APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
+        # s = serializers.UserBasicSerializer(data=request.data)
         data = request.data
         email = data.get('username')
         password = data.get('password')
         try:
             validators.EmailValidator()(email)
         except validators.ValidationError:
-            raise exceptions.InvalidEmail()
+            raise exceptions.InvalidEmail
         try:
             validate_password(password)
         except :
@@ -117,8 +122,8 @@ class AccessToken(SwaggerMixin, APIView):
         'tags': ['Account'],
         'methods': {
             'post': {
-                'title': 'Access Token',
-                'description': 'get access token by refresh token',
+                'title': 'Access Token - Update login',
+                'description': 'get access token by refresh token - keep login',
                 'request_body': serializers.TokenRefreshSerializer,
                 'responses': {
                     200: serializers.TokenAccessSerializer,
@@ -158,14 +163,14 @@ class UserUpdate(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (parsers.MultiPartParser,)
     def put(self, request):
-        usr = request.user
-        s = serializers.UserUpdateSerializer(usr,data=request.data)
+        user = request.user
+        s = serializers.UserUpdateSerializer(user,data=request.data)
         is_valid = s.is_valid()
         if is_valid == False:
             raise exceptions.BadRequest
         else:
-            s.update(usr,s.validated_data)
-        return Response(serializers.UserUpdateSerializer(usr).data)
+            s.update(user,s.validated_data)
+        return Response(serializers.UserUpdateSerializer(user).data)
 
 
 
@@ -250,8 +255,8 @@ class ResetPasswordCode(SwaggerMixin, APIView):
                 if str(code) == str(code_redis):
                     try:
                         # get user and set new password
-                        usr = models.User.objects.get(email=email)
-                        s.update(usr,s.validated_data)
+                        user = models.User.objects.get(email=email)
+                        s.update(user,s.validated_data)
                         message = 'Your password has been successfully changed'
                         # remove code in redis
                         redis_py.remove_key(key_redis)
@@ -266,6 +271,7 @@ class ResetPasswordCode(SwaggerMixin, APIView):
                 raise exceptions.InvalidCode(['The reset code has expired or invalid !'])
             return Response({'message':message})
         raise exceptions.BadRequest(exceptions.serializer_err(s))
+
 
 class UserDelete(SwaggerMixin, APIView):
     SWAGGER = {
@@ -287,13 +293,13 @@ class UserDelete(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def delete(self, request):
-        usr = request.user
-        s = serializers.UserDeleteSerializer(usr,data=request.data)
+        user = request.user
+        s = serializers.UserDeleteSerializer(user,data=request.data)
         is_valid = s.is_valid()
         # Check password user
-        if is_valid and usr.check_password(s.validated_data['password']):
+        if is_valid and user.check_password(s.validated_data['password']):
             # Delete User or anything ..
-            usr.delete()
+            user.delete()
         else:
             raise exceptions.InvalidField(['Password is incorrect'])
         return Response({'message':'Bye...'})
