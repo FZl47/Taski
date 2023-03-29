@@ -1,6 +1,6 @@
+import uuid
 from django.db import models
 from core import validators
-
 
 @validators.decorators.validator_file_format
 def upload_src_task_file(instance,path):
@@ -12,8 +12,10 @@ def upload_src_task_file(instance,path):
 
 
 class Group(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,primary_key=True)
+    title = models.CharField(max_length=100)
     owner = models.ForeignKey('account.User',on_delete=models.CASCADE)
-    admins = models.ManyToManyField('GroupAdmin')
+    admins = models.ManyToManyField('GroupAdmin',blank=True)
 
 
 class GroupAdmin(models.Model):

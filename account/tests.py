@@ -1,5 +1,5 @@
-import urllib.request
 import os
+import urllib.request
 from django.core.files import File
 from django.test import TestCase
 from django.urls import reverse
@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from core import utils
 
 
-class AccountTest(APITestCase):
+class AuthCreateUserMixin:
 
     def create_user(self):
         data = {
@@ -21,11 +21,15 @@ class AccountTest(APITestCase):
         req = req.json()
         return req['result']
 
-    def authenticate_user(self, usr):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {usr['access']}")
+    def authenticate_user(self, user):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {user['access']}")
+
+
+class AccountTest(AuthCreateUserMixin,APITestCase):
 
     def test_create_account(self):
         self.create_user()
+
 
     def test_login(self):
         self.create_user()
@@ -37,17 +41,18 @@ class AccountTest(APITestCase):
         self.assertEqual(req.status_code, 200)
 
     def test_update_access_token(self):
-        usr = self.create_user()
-        refresh_token = usr['refresh']
+        user = self.create_user()
+        refresh_token = user['refresh']
         data = {
             'refresh': refresh_token
         }
         req = self.client.post(reverse('account:access_token'), data)
         self.assertEqual(req.status_code, 200)
 
+
     def test_update_user(self):
-        usr = self.create_user()
-        self.authenticate_user(usr)
+        user = self.create_user()
+        self.authenticate_user(user)
         data = {
             'first_name': 'Fazel updated !',
             'last_name': 'Momeni updated !',
@@ -62,7 +67,7 @@ class AccountTest(APITestCase):
             This test need code sended to email
             so this is useless
         """
-        # usr = self.create_user()
+        # user = self.create_user()
         # data = {
         #     'email': 'test@gmail.com'
         # }
@@ -76,7 +81,7 @@ class AccountTest(APITestCase):
             This test need code sended to email
             so this is useless
         """
-        # usr = self.create_user()
+        # user = self.create_user()
         # data = {
         #     'email': 'test@gmail.com',
         #     'code':'...',
@@ -88,8 +93,8 @@ class AccountTest(APITestCase):
 
 
     def test_delete_user(self):
-        usr = self.create_user()
-        self.authenticate_user(usr)
+        user = self.create_user()
+        self.authenticate_user(user)
         data = {
             'password': 'ThisIsTestPassword'
         }
