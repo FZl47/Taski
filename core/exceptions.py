@@ -30,7 +30,13 @@ def _execption_detail(status_code,messages=[]):
 
 
 def get_messages_serializer(errors):
-    return [str(err[0]) for err in errors.values()]
+    result = []
+    for field_name,err_mess in errors.items():
+        field_name = str(field_name)
+        err_mess = str(err_mess[0])
+        err_mess = f"{field_name} => {err_mess}"
+        result.append(err_mess)
+    return result
 
 
 def serializer_err(serializer):
@@ -89,6 +95,12 @@ class InvalidFormatFile(Exception):
     default_detail = _execption_detail(status_code,['Format file is invalid'])
 
 
+class InvalidFormatImage(Exception):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "format_image_not_valid"
+    default_detail = _execption_detail(status_code,['Format image is invalid'])
+
+
 class InvalidEmail(Exception):
     status_code = status.HTTP_400_BAD_REQUEST
     default_code = "email_not_valid"
@@ -117,6 +129,18 @@ class UserNotFound(Exception):
     status_code = status.HTTP_404_NOT_FOUND
     default_code = "user_not_found"
     default_detail = _execption_detail(status_code,['User not found'])
+
+
+class AdminGroupNotFound(Exception):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_code = "admin_group_not_found"
+    default_detail = _execption_detail(status_code,['Admin Group not found'])
+
+
+class PermissionDenied(Exception):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_code = "permission_denied"
+    default_detail = _execption_detail(status_code, ['Permission Denied'])
 
 
 class Conflict(Exception):
