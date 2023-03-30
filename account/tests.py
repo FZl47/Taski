@@ -8,21 +8,36 @@ from core import utils
 
 
 class AuthCreateUserMixin:
-
+    user = None
     def create_user(self):
-        data = {
-            'first_name': 'Fazel',
-            'last_name': 'Momeni',
-            'email': 'test@gmail.com',
-            'password': 'ThisIsTestPassword'
-        }
-        req = self.client.post(reverse('account:register'), data)
-        self.assertEqual(req.status_code, 200)
-        req = req.json()
-        return req['result']
+        if self.user == None:
+            data = {
+                'first_name': 'Fazel',
+                'last_name': 'Momeni',
+                'email': 'test@gmail.com',
+                'password': 'ThisIsTestPassword'
+            }
+            req = self.client.post(reverse('account:register'), data)
+            self.assertEqual(req.status_code, 200)
+            req = req.json()
+            result = req['result']
+            self.user = result
+            return result
+        else:
+            return self.user
 
     def authenticate_user(self, user):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {user['access']}")
+
+    def login(self,user):
+        data = {
+            'username': 'test@gmail.com',
+            'password': 'ThisIsTestPassword'
+        }
+        req = self.client.post(reverse('account:login'), data)
+        self.assertEqual(req.status_code, 200)
+        req = req.json()
+        return req['result']
 
 
 class AccountTest(AuthCreateUserMixin,APITestCase):

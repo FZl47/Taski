@@ -108,4 +108,4 @@ class UserDeleteSerializer(serializers.ModelSerializer):
 class UserBasicSerializer(TokensSerializer, serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ('first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh', 'groups_task')
+        fields = ('id','first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh', 'groups_task')

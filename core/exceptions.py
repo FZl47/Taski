@@ -125,6 +125,12 @@ class FieldRequired(Exception):
     default_detail = _execption_detail(status_code,['Field is required'])
 
 
+class NotFound(Exception):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_code = "not_found"
+    default_detail = _execption_detail(status_code,['Not found'])
+
+
 class UserNotFound(Exception):
     status_code = status.HTTP_404_NOT_FOUND
     default_code = "user_not_found"
@@ -138,7 +144,7 @@ class AdminGroupNotFound(Exception):
 
 
 class PermissionDenied(Exception):
-    status_code = status.HTTP_404_NOT_FOUND
+    status_code = status.HTTP_403_FORBIDDEN
     default_code = "permission_denied"
     default_detail = _execption_detail(status_code, ['Permission Denied'])
 

@@ -1,6 +1,8 @@
 import uuid
 from django.db import models
 from core import validators
+from core.models import BaseModelMixin
+
 
 @validators.decorators.validator_file_format
 def upload_src_task_file(instance,path):
@@ -11,19 +13,18 @@ def upload_src_task_file(instance,path):
     return f"files/task/{instance_id}/{get_random_string(10)}.{path}"
 
 
-class Group(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,primary_key=True)
+class Group(BaseModelMixin,models.Model):
     title = models.CharField(max_length=100)
     owner = models.ForeignKey('account.User',on_delete=models.CASCADE)
     admins = models.ManyToManyField('GroupAdmin',blank=True)
 
 
-class GroupAdmin(models.Model):
+class GroupAdmin(BaseModelMixin,models.Model):
     user = models.ForeignKey('account.User',on_delete=models.CASCADE)
 
 
 
-class Task(models.Model):
+class Task(BaseModelMixin,models.Model):
     group = models.ForeignKey('Group',on_delete=models.CASCADE)
     users = models.ManyToManyField('account.User')
     title = models.CharField(max_length=200)
@@ -37,7 +38,7 @@ class Task(models.Model):
         return f"#{self.group_id} - {self.title[:30]}"
 
 
-class TaskFile(models.Model):
+class TaskFile(BaseModelMixin,models.Model):
     file = models.FileField(upload_to=upload_src_task_file)
 
 
