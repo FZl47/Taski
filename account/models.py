@@ -5,6 +5,7 @@ from django.utils.crypto import get_random_string
 from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from core import exceptions, validators
+from core.models import BaseModelMixin
 from core.mixins.model.delete_file import RemovePastFileMixin
 
 
@@ -41,7 +42,7 @@ class UserManager(BaseUserManager):
 
 
 
-class User(RemovePastFileMixin,AbstractUser):
+class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
     """
         Custom User Model
     """
