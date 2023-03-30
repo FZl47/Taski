@@ -61,3 +61,81 @@ class DeleteGroup(SwaggerMixin, APIView):
         response_data =  serializers.DeleteGroupSerializer(group).data
         group.delete()
         return Response(response_data)
+
+
+class CreateAdminGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group Admin'],
+        'methods': {
+            'post': {
+                'title': 'Create Admin',
+                'description': 'create an admin for group',
+                'request_body': serializers.CreateAdminGroupSerializer,
+                'responses': {
+                    200: serializers.CreateAdminResponseGroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        s = serializers.CreateAdminGroupSerializer(data=request.data)
+        if s.is_valid():
+            admin_group = s.save()
+        else:
+            raise exceptions.BadRequest(exceptions.get_messages_serializer(s.errors))
+        return Response(serializers.CreateAdminResponseGroupSerializer(admin_group).data)
+
+
+
+class AddAdminToGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group Admin'],
+        'methods': {
+            'put': {
+                'title': 'Add Admin',
+                'description': 'add admin to group',
+                'request_body': serializers.AddAdminToGroupSerializer,
+                'responses': {
+                    200: serializers.AddAdminToGroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.IsAuthenticated, task_permissions.IsOwnerGroup)
+
+    def put(self, request, group_id):
+        group = getattr(request,'group')
+        s = serializers.AddAdminToGroupSerializer(group,request.data)
+        if s.is_valid():
+            admins = s.validated_data['admins']
+            # add admins to group
+            group.admins.add(*admins)
+        else:
+            raise exceptions.BadRequest(exceptions.get_messages_serializer(s.errors))
+        return Response(serializers.AddAdminToGroupSerializer(group).data)
+
+
+class GetAdminGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group Admin'],
+        'methods': {
+            'get': {
+                'title': 'Get Admin',
+                'description': 'get information admin group',
+                'request_body': serializers.GetAdminGroupSerializer,
+                'responses': {
+                    200: serializers.GetAdminGroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, group_id):
+        pass
+
