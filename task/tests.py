@@ -62,3 +62,15 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
         }
         req = self.client.put(reverse('task:add_admin_to_group', args=(group_id,)),data)
         self.assertEqual(req.status_code, 200)
+
+
+    def test_add_user_to_group(self):
+        member_user = self.login(self.create_user())
+        group_id = self.create_group().json()['result']['id']
+        owner_user = self.login(self.user)
+        data = {
+            'email':member_user['email']
+        }
+        req = self.client.post(reverse('task:add_user_group',args=(group_id,)), data)
+        self.assertEqual(req.status_code, 200)
+

@@ -219,7 +219,6 @@ class ResetPassword(SwaggerMixin, APIView):
         raise exceptions.BadRequest
 
 
-
 class ResetPasswordCode(SwaggerMixin, APIView):
     SWAGGER = {
         'tags': ['Account'],

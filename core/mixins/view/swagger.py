@@ -18,8 +18,8 @@ def _init():
         tags = SWAGGER['tags']
 
         assert len(methods) > 0, 'Swagger methods cant be empty!'
-        assert all([ m.lower() in _ALLOW_METHODS for m in methods]), 'Invalid method in Swagger methods'
-        assert all([ getattr(view,m,False) for m in methods ]), 'Swagger method passed but method not defined in view'
+        assert all([m.lower() in _ALLOW_METHODS for m in methods]), 'Invalid method in Swagger methods'
+        assert all([getattr(view,m,False) for m in methods]), 'Swagger method passed but method not defined in view'
 
 
         for method in SWAGGER['methods'].keys():

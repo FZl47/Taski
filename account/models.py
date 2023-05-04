@@ -14,7 +14,8 @@ def upload_image_user(instance,path):
     """
         :return src file in media
     """
-    instance_id = instance.pk or get_random_string(13)
+    # instance_id = instance.pk or get_random_string(13)
+    instance_id = get_random_string(20)
     return f"images/users/{instance_id}/{get_random_string(10)}.{path}"
 
 
