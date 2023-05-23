@@ -24,7 +24,6 @@ class GroupAdmin(BaseModelMixin,models.Model):
     user = models.ForeignKey('account.User',on_delete=models.CASCADE)
 
 
-
 class Task(BaseModelMixin,models.Model):
     group = models.ForeignKey('Group',on_delete=models.CASCADE)
     users = models.ManyToManyField('account.User')

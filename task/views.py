@@ -116,7 +116,7 @@ class GroupUsers(SwaggerMixin, APIView):
 
     def get(self, request, group_id):
         group = get_object_or_404(models.Group,id=group_id)
-        response_data = serializers.GetGroupUsersSerializer(group,many=True).data
+        response_data = serializers.GetGroupUsersSerializer(group.user_set.all(),many=True).data
         return Response(response_data)
 
 

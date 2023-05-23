@@ -6,18 +6,21 @@ from rest_framework.views import exception_handler
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
     if response is not None:
-        detail = exc.get_full_details()
-        status_code = detail.get('status',{}).get('message') or response.status_code
-        messages = [m['message'] for m in detail.get('messages',{})]
-        if not messages:
-            messages = [detail.get('message')]
-        if not any(messages):
-            messages = []
-        response.data = {
-            'result':{},
-            'messages':messages,
-            'status':status_code
-        }
+        try:
+            detail = exc.get_full_details()
+            status_code = detail.get('status', {}).get('message') or response.status_code
+            messages = [m['message'] for m in detail.get('messages', {})]
+            if not messages:
+                messages = [detail.get('message')]
+            if not any(messages):
+                messages = []
+            response.data = {
+                'result': {},
+                'messages': messages,
+                'status': status_code
+            }
+        except:
+            return response
     return response
 
 
