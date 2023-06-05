@@ -15,7 +15,7 @@ def upload_image_user(instance,path):
         :return src file in media
     """
     # instance_id = instance.pk or get_random_string(13)
-    instance_email = str(instance.email).replace('@','_')
+    instance_email = str(instance.email).replace('.','_')
     return f"images/users/{instance_email}/{get_random_string(10)}.{path}"
 
 
