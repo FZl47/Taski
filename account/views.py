@@ -52,7 +52,7 @@ class Register(SwaggerMixin, APIView):
             group = task_models.Group.objects.create(title='Personal group',owner=user)
             user.groups_task.add(group)
         else:
-            messages = exceptions.get_messages_serializer(s.errors)
+            messages = exceptions.get_errors_serializer(s.errors)
             raise exceptions.BadRequest(messages)
 
         return Response(serializers.TokensSerializer(user).data)

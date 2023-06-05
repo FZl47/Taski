@@ -158,7 +158,7 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
 
-AUTH_USER_MODEL  = 'account.User'
+AUTH_USER_MODEL = 'account.User'
 
 
 SIMPLE_JWT = {
