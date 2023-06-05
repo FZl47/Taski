@@ -1,10 +1,10 @@
-from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from rest_framework.views import APIView
 from rest_framework import permissions, parsers
 from core.mixins.view.swagger import SwaggerMixin
 from core import exceptions
 from core.response import Response
+from core.models import get_object_or_none
 from account import models as account_models
 from . import permissions as task_permissions
 from . import serializers
@@ -37,7 +37,7 @@ class CreateGroup(SwaggerMixin, APIView):
             group = models.Group.objects.create(title=title, owner=user)
             user.groups_task.add(group)
         else:
-            messages = exceptions.get_messages_serializer(s.errors)
+            messages = exceptions.get_errors_serializer(s.errors)
             raise exceptions.FieldRequired(messages)
         return Response(serializers.CreateGroupSerializer(group).data)
 
@@ -88,11 +88,13 @@ class AddUserToGroup(SwaggerMixin, APIView):
         s = serializers.AddUserToGroupSerializer(data=request.data)
         if s.is_valid():
             email = s.data['email']
-            user = get_object_or_404(account_models.User,email=email)
+            user = get_object_or_none(account_models.User,email=email)
+            if user is None:
+                raise exceptions.UserNotFound
             # TODO:should send email to accept request join
             user.groups_task.add(group)
         else:
-            raise exceptions.BadRequest(exceptions.get_messages_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
         return Response(serializers.AddUserToGroupResponseSerializer(user).data)
 
 
@@ -115,7 +117,9 @@ class GroupUsers(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, group_id):
-        group = get_object_or_404(models.Group,id=group_id)
+        group = get_object_or_none(models.Group,id=group_id)
+        if group is None:
+            raise exceptions.NotFound(['Group not found'])
         response_data = serializers.GetGroupUsersSerializer(group.user_set.all(),many=True).data
         return Response(response_data)
 
@@ -138,7 +142,9 @@ class DeleteGroupUser(SwaggerMixin, APIView):
 
     def delete(self, request, group_id,user_id):
         group = getattr(request,'group')
-        user = get_object_or_404(account_models.User,id=user_id,groups_task__in=[group.id])
+        user = get_object_or_none(account_models.User,id=user_id,groups_task__in=[group.id])
+        if user is None:
+            raise exceptions.NotFound(['User not found'])
         user.groups_task.remove(group)
         response_data = serializers.DeleteGroupUserSerializer(user).data
         return Response(response_data)
@@ -161,7 +167,9 @@ class GroupAdmins(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, group_id):
-        group = get_object_or_404(models.Group,id=group_id)
+        group = get_object_or_none(models.Group,id=group_id)
+        if group is None:
+            raise exceptions.NotFound(['Group not found'])
         response_data = serializers.GetGroupAdminsSerializer(group.admins,many=True).data
         return Response(response_data)
 
@@ -188,7 +196,7 @@ class CreateAdminGroup(SwaggerMixin, APIView):
         if s.is_valid():
             admin_group = s.save()
         else:
-            raise exceptions.BadRequest(exceptions.get_messages_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
         return Response(serializers.CreateAdminResponseGroupSerializer(admin_group).data)
 
 
@@ -220,7 +228,7 @@ class AddAdminToGroup(SwaggerMixin, APIView):
             for admin in admins:
                 admin.user.groups_task.add(group)
         else:
-            raise exceptions.BadRequest(exceptions.get_messages_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
         return Response(serializers.AddAdminToGroupSerializer(group).data)
 
 
@@ -243,7 +251,9 @@ class DeleteGroupAdmin(SwaggerMixin, APIView):
 
     def delete(self, request, group_id,admin_id):
         group = getattr(request,'group')
-        admin = get_object_or_404(models.GroupAdmin,id=admin_id,group__id=group_id)
+        admin = get_object_or_none(models.GroupAdmin,id=admin_id,group__id=group_id)
+        if admin is None:
+            raise exceptions.NotFound(['Admin not found'])
         group.admins.remove(admin)
         response_data = serializers.DeleteGroupAdminSerializer(admin).data
         return Response(response_data)

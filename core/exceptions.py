@@ -9,14 +9,14 @@ def custom_exception_handler(exc, context):
         try:
             detail = exc.get_full_details()
             status_code = detail.get('status', {}).get('message') or response.status_code
-            messages = [m['message'] for m in detail.get('messages', {})]
-            if not messages:
-                messages = [detail.get('message')]
-            if not any(messages):
-                messages = []
+            errors = [m['message'] for m in detail.get('errors', {})]
+            if not errors:
+                errors = [detail.get('message')]
+            if not any(errors):
+                errors = []
             response.data = {
-                'result': {},
-                'messages': messages,
+                'data': {},
+                'errors': errors,
                 'status': status_code
             }
         except:
@@ -24,15 +24,15 @@ def custom_exception_handler(exc, context):
     return response
 
 
-def _execption_detail(status_code,messages=[]):
+def _execption_detail(status_code,errors=[]):
     return {
         'result':{},
         'status':status_code,
-        'messages':messages
+        'errors':errors
     }
 
 
-def get_messages_serializer(errors):
+def get_errors_serializer(errors):
     result = []
     for field_name,err_mess in errors.items():
         field_name = str(field_name)
@@ -43,24 +43,24 @@ def get_messages_serializer(errors):
 
 
 def serializer_err(serializer):
-    messages = []
+    errors = []
     for err in serializer.errors.items():
-        messages.append(
+        errors.append(
             "{} : {}".format(err[0],err[1][0])
         )
-    return messages
+    return errors
 
 class DetailDictMixin:
-    def __init__(self,messages=[],status_code=None,default_code=None):
+    def __init__(self,errors=[],status_code=None,default_code=None):
 
         if status_code != None:
             setattr(self,'status_code',status_code)
         else:
             status_code = self.status_code
 
-        messages = messages or self.default_detail.get('messages')
+        errors = errors or self.default_detail.get('errors')
         default_code = default_code or self.default_code
-        detail_dict = _execption_detail(status_code,messages)
+        detail_dict = _execption_detail(status_code,errors)
         super().__init__(detail_dict)
 
 
