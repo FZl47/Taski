@@ -9,7 +9,7 @@ urlpatterns = [
     path('group/<uuid:group_id>/delete',views.DeleteGroup.as_view(),name='delete_group'),
     # Group User
     path('group/<uuid:group_id>/users',views.GroupUsers.as_view(),name='group_users'),
-    path('group/<uuid:group_id>/users/add/request',views.AddUserToGroup.as_view(),name='add_user_group'),
+    path('group/<uuid:group_id>/users/add/request',views.RequestAddUserToGroup.as_view(),name='request_add_user_group'),
     path('group/<uuid:group_id>/users/<uuid:user_id>/delete',views.DeleteGroupUser.as_view(),name='group_user_delete'),
     # Admin
     path('group/admin/create',views.CreateAdminGroup.as_view(),name='create_admin_group'),
