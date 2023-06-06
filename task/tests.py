@@ -1,12 +1,12 @@
+from django.test.utils import override_settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from account.tests import AuthCreateUserMixin
 from . import models
 
 
-
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
 class GroupTest(AuthCreateUserMixin,APITestCase):
 
     def authenticate(self,user):
@@ -68,6 +68,6 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
         data = {
             'email':member_user['email']
         }
-        req = self.client.post(reverse('task:add_user_group',args=(group_id,)), data)
+        req = self.client.post(reverse('task:request_add_user_group',args=(group_id,)), data)
         self.assertEqual(req.status_code, 200)
 
