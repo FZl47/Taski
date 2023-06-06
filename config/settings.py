@@ -68,7 +68,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -181,6 +181,12 @@ SWAGGER_SETTINGS = {
 
 API_VERSION = 'v1'
 NAME_POINT_API = f'api/{API_VERSION}'
+HOST_ADDRESS = 'http://127.0.0.1:8000'
+
+
+def GET_FULL_HOST(pth=None):
+    return f"{HOST_ADDRESS}" + pth if pth is not None else ''
+
 
 IMAGES_FORMAT = [
     'jpg',
