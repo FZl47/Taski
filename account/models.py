@@ -1,3 +1,5 @@
+import datetime
+import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -12,7 +14,7 @@ from core.mixins.model.delete_file import RemovePastFileMixin
 @validators.decorators.validator_image_format
 def upload_image_user(instance,path):
     """
-        :return src file in media
+        return src file in media
     """
     # instance_id = instance.pk or get_random_string(13)
     instance_email = str(instance.email).replace('.','_')
@@ -42,7 +44,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-
 class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
     """
         Custom User Model
@@ -67,3 +68,30 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
 
     def get_token_refresh(self):
         return str(RefreshToken.for_user(self))
+
+
+class RequestUserToJoinGroup(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    user = models.ForeignKey('User',on_delete=models.CASCADE)
+    group = models.ForeignKey('task.Group',on_delete=models.CASCADE)
+    datetime_create = models.DateTimeField(auto_now_add=True)
+    expire_after_days = models.PositiveIntegerField(default=7)
+
+    def is_valid(self):
+        now = datetime.datetime.now()
+        if now < (self.datetime_create + datetime.timedelta(days=self.expire_after_days)):
+            return True
+        return False
+
+    def __str__(self):
+        return f"Request Join To Group - user:{self.user} group:{self.group}"
+
+
+class HistoryRequestUserToJoinGroup(models.Model):
+    user = models.ForeignKey('User',on_delete=models.SET_NULL,null=True,blank=True)
+    request_by = models.ForeignKey('User',on_delete=models.CASCADE,related_name='user_request_by')
+    group = models.ForeignKey('task.Group',on_delete=models.CASCADE)
+    datetime_submit = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"History Request Join To Group - user:{self.user} group:{self.group}"
