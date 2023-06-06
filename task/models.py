@@ -8,7 +8,7 @@ from core.models import BaseModelMixin
 @validators.decorators.validator_file_format
 def upload_src_task_file(instance,path):
     """
-        :return src task file in media
+        return src task file in media
     """
     instance_id = instance.pk or get_random_string(13)
     return f"files/task/{instance_id}/{get_random_string(10)}.{path}"
