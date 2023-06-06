@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, parsers
 from core.mixins.view.swagger import SwaggerMixin
 from core import exceptions
+from core.utils import send_email
 from core.response import Response
 from core.models import get_object_or_none
 from account import models as account_models
@@ -37,8 +38,8 @@ class CreateGroup(SwaggerMixin, APIView):
             group = models.Group.objects.create(title=title, owner=user)
             user.groups_task.add(group)
         else:
-            messages = exceptions.get_errors_serializer(s.errors)
-            raise exceptions.FieldRequired(messages)
+            errors = exceptions.get_errors_serializer(s)
+            raise exceptions.FieldRequired(errors)
         return Response(serializers.CreateGroupSerializer(group).data)
 
 
@@ -65,13 +66,13 @@ class DeleteGroup(SwaggerMixin, APIView):
         return Response(response_data)
 
 
-class AddUserToGroup(SwaggerMixin, APIView):
+class RequestAddUserToGroup(SwaggerMixin, APIView):
 
     SWAGGER = {
         'tags': ['Group'],
         'methods': {
             'post': {
-                'title': 'Add User to Group',
+                'title': 'Request Add User to Group',
                 'description': 'add user(member) to group',
                 'request_body':serializers.AddUserToGroupSerializer,
                 'responses': {
@@ -91,10 +92,10 @@ class AddUserToGroup(SwaggerMixin, APIView):
             user = get_object_or_none(account_models.User,email=email)
             if user is None:
                 raise exceptions.UserNotFound
-            # TODO:should send email to accept request join
-            user.groups_task.add(group)
+            account_models.RequestUserToJoinGroup.objects.create(user=user,group=group)
+            account_models.HistoryRequestUserToJoinGroup(user=user,group=group,request_by=request.user)
         else:
-            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.AddUserToGroupResponseSerializer(user).data)
 
 
@@ -196,7 +197,7 @@ class CreateAdminGroup(SwaggerMixin, APIView):
         if s.is_valid():
             admin_group = s.save()
         else:
-            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.CreateAdminResponseGroupSerializer(admin_group).data)
 
 
@@ -228,7 +229,7 @@ class AddAdminToGroup(SwaggerMixin, APIView):
             for admin in admins:
                 admin.user.groups_task.add(group)
         else:
-            raise exceptions.BadRequest(exceptions.get_errors_serializer(s.errors))
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.AddAdminToGroupSerializer(group).data)
 
 
