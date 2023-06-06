@@ -1,8 +1,6 @@
-from django.shortcuts import render
 from django.core import validators
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth import get_user_model
 from drf_yasg import openapi
 from rest_framework.views import APIView
 from rest_framework import permissions, parsers
@@ -12,6 +10,7 @@ from core import exceptions
 from core.response import Response
 from core import utils
 from core import redis_py
+from core.models import get_object_or_none
 from task import models as task_models
 from . import serializers
 from . import models
@@ -52,8 +51,8 @@ class Register(SwaggerMixin, APIView):
             group = task_models.Group.objects.create(title='Personal group',owner=user)
             user.groups_task.add(group)
         else:
-            messages = exceptions.get_errors_serializer(s.errors)
-            raise exceptions.BadRequest(messages)
+            errors = exceptions.get_errors_serializer(s)
+            raise exceptions.BadRequest(errors)
 
         return Response(serializers.TokensSerializer(user).data)
 
@@ -302,3 +301,35 @@ class UserDelete(SwaggerMixin, APIView):
         else:
             raise exceptions.InvalidField(['Password is incorrect'])
         return Response({'message':'Bye...'})
+
+
+class AcceptRequestGroupJoin(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Account'],
+        'methods': {
+            'get': {
+                'title': 'Accept Request Join To Group',
+                'description': 'accept request join to group',
+                'responses': {
+                    200: serializers.AcceptRequestJoinToGroupResponse
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, token):
+        request_obj = get_object_or_none(models.RequestUserToJoinGroup,token=token)
+        if request_obj:
+            if request_obj.is_valid():
+                user = request_obj.user
+                group = request_obj.group
+                user.groups_task.add(group)
+            else:
+                raise exceptions.InvalidField(['Token is expired!'])
+        else:
+            raise exceptions.NotFound(['Token is not valid - request group join not found'])
+        s = serializers.AcceptRequestJoinToGroupResponse(request_obj)
+        request_obj.delete()
+        return Response(s.data)
