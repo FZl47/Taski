@@ -12,6 +12,7 @@ urlpatterns = [
     path('reset-password-code/',views.ResetPasswordCode.as_view(),name='reset_password_code'),
     path('delete-user/',views.UserDelete.as_view(),name='delete_user'),
     path('token/refresh/',views.AccessToken.as_view(),name='access_token'),
+    path('group/request/accept/<uuid:token>',views.AcceptRequestGroupJoin.as_view(),name='accept_request_group_join'),
 ]
 
 
