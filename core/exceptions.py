@@ -32,7 +32,8 @@ def _execption_detail(status_code,errors=[]):
     }
 
 
-def get_errors_serializer(errors):
+def get_errors_serializer(serializer):
+    errors = serializer.errors
     result = []
     for field_name,err_mess in errors.items():
         field_name = str(field_name)
