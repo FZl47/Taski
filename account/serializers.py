@@ -109,3 +109,12 @@ class UserBasicSerializer(TokensSerializer, serializers.ModelSerializer):
     class Meta:
         model = models.User
         fields = ('id','first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh', 'groups_task')
+
+
+class AcceptRequestJoinToGroupResponse(serializers.ModelSerializer):
+    group_id = serializers.CharField(source='group.id', read_only=True)
+    group_title = serializers.CharField(source='group.title', read_only=True)
+
+    class Meta:
+        model = models.RequestUserToJoinGroup
+        fields = ('user','group_title','group_id')
