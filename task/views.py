@@ -59,7 +59,7 @@ class DeleteGroup(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated, task_permissions.IsOwnerGroup)
 
     def delete(self, request, group_id):
-        group = getattr(request,'group')
+        group = request.group
         response_data = serializers.DeleteGroupSerializer(group).data
         group.delete()
         return Response(response_data)
@@ -84,7 +84,7 @@ class AddUserToGroup(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,task_permissions.IsOwnerOrAdminGroup)
 
     def post(self, request, group_id):
-        group = getattr(request,'group')
+        group = request.group
         s = serializers.AddUserToGroupSerializer(data=request.data)
         if s.is_valid():
             email = s.data['email']
@@ -141,7 +141,7 @@ class DeleteGroupUser(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated,task_permissions.IsOwnerOrAdminGroup)
 
     def delete(self, request, group_id,user_id):
-        group = getattr(request,'group')
+        group = request.group
         user = get_object_or_none(account_models.User,id=user_id,groups_task__in=[group.id])
         if user is None:
             raise exceptions.NotFound(['User not found'])
@@ -218,7 +218,7 @@ class AddAdminToGroup(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated, task_permissions.IsOwnerGroup)
 
     def put(self, request, group_id):
-        group = getattr(request,'group')
+        group = request.group
         s = serializers.AddAdminToGroupSerializer(group,request.data)
         if s.is_valid():
             admins = s.validated_data['admins']
@@ -250,7 +250,7 @@ class DeleteGroupAdmin(SwaggerMixin, APIView):
     permission_classes = (permissions.IsAuthenticated, task_permissions.IsOwnerGroup)
 
     def delete(self, request, group_id,admin_id):
-        group = getattr(request,'group')
+        group = request.group
         admin = get_object_or_none(models.GroupAdmin,id=admin_id,group__id=group_id)
         if admin is None:
             raise exceptions.NotFound(['Admin not found'])

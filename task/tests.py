@@ -25,14 +25,12 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
     def test_create_group(self):
         self.create_group()
 
-
     def test_delete_group(self):
         req = self.create_group()
         self.assertEqual(req.status_code, 200)
-        group_id = req.json().get('result').get('id')
+        group_id = req.json().get('data').get('id')
         req = self.client.delete(reverse('task:delete_group',args=(group_id,)))
         self.assertEqual(req.status_code,200)
-
 
     def test_create_admin_group(self):
         user = self.create_user()
@@ -44,10 +42,9 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
         req = self.client.post(reverse('task:create_admin_group'),data)
         self.assertEqual(req.status_code, 200)
 
-
     def test_add_admin_to_group(self):
         group = self.create_group()
-        group_id = group.json().get('result').get('id')
+        group_id = group.json().get('data').get('id')
         user = self.create_user()
         self.authenticate(user)
         user = self.login(user)
@@ -57,7 +54,7 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
         req = self.client.post(reverse('task:create_admin_group'), data)
         data = {
             'admins':[
-                req.json()['result']['id']
+                req.json()['data']['id']
             ]
         }
         req = self.client.put(reverse('task:add_admin_to_group', args=(group_id,)),data)
@@ -66,7 +63,7 @@ class GroupTest(AuthCreateUserMixin,APITestCase):
 
     def test_add_user_to_group(self):
         member_user = self.login(self.create_user())
-        group_id = self.create_group().json()['result']['id']
+        group_id = self.create_group().json()['data']['id']
         owner_user = self.login(self.user)
         data = {
             'email':member_user['email']

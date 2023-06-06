@@ -20,9 +20,9 @@ class AuthCreateUserMixin:
             req = self.client.post(reverse('account:register'), data)
             self.assertEqual(req.status_code, 200)
             req = req.json()
-            result = req['result']
-            self.user = result
-            return result
+            data = req['data']
+            self.user = data
+            return data
         else:
             return self.user
 
@@ -37,7 +37,7 @@ class AuthCreateUserMixin:
         req = self.client.post(reverse('account:login'), data)
         self.assertEqual(req.status_code, 200)
         req = req.json()
-        return req['result']
+        return req['data']
 
 
 class AccountTest(AuthCreateUserMixin,APITestCase):
