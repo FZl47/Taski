@@ -78,6 +78,7 @@ class AccountTest(AuthCreateUserMixin,APITestCase):
 
 
     def test_reset_password(self):
+        # TODO: should be complete
         """
             This test need code sended to email
             so this is useless
@@ -92,6 +93,7 @@ class AccountTest(AuthCreateUserMixin,APITestCase):
 
 
     def test_reset_password_code(self):
+        # TODO: should be complete
         """
             This test need code sended to email
             so this is useless
