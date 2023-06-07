@@ -13,7 +13,6 @@ class Index(SwaggerMixin, APIView):
             'post': {
                 'title': 'Test health project POST',
                 'description':'',
-                # 'request_body': X,  # serizlier or instance
                 'responses': {
                     200:"",
                 },
@@ -21,7 +20,6 @@ class Index(SwaggerMixin, APIView):
             'get': {
                 'title': 'Test health project GET',
                 'description':'',
-                #'query_serializer': X,  # serizlier or instance
                 'responses': {
                     200: "",
                 },
@@ -37,10 +35,10 @@ class Index(SwaggerMixin, APIView):
         """
             Test view
         """
-        return Response('Hi')
+        return Response('is working ...')
 
     def get(self, request):
         """
             Test view
         """
-        return Response('Hi')
+        return Response('is working ...')
