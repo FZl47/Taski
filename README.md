@@ -1,6 +1,10 @@
 # Taski
 
-#### will be complete
+### TODO
+- [ ] 
+- [x] Venus
+
+
 
 
 
@@ -14,3 +18,4 @@ for Fix some bug in template(**venv/Lib/site-packages/drf_yasg/templates/drf_yas
         }
     </style>      
 ```
+
