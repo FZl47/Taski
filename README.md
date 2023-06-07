@@ -1,7 +1,7 @@
 # Taski
 
 ### TODO
-- [ ] transfer view or anything about Group, GroupAdmin to 'account' app
+- [x] transfer view or anything about Group, GroupAdmin to 'account' app
 
 
 
