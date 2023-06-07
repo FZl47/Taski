@@ -4,7 +4,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.crypto import get_random_string
-from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from core import exceptions, validators
 from core.models import BaseModelMixin
@@ -55,7 +54,7 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
     last_name = models.CharField(_("last name"), max_length=150)
     email = models.EmailField(_('email address'), unique = True)
     image = models.ImageField(upload_to=upload_image_user,null=True,blank=True)
-    groups_task = models.ManyToManyField('task.Group')
+    groups_task = models.ManyToManyField('Group')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
@@ -73,7 +72,7 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
 class RequestUserToJoinGroup(models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey('User',on_delete=models.CASCADE)
-    group = models.ForeignKey('task.Group',on_delete=models.CASCADE)
+    group = models.ForeignKey('Group',on_delete=models.CASCADE)
     datetime_create = models.DateTimeField(auto_now_add=True)
     expire_after_days = models.PositiveIntegerField(default=7)
 
@@ -90,8 +89,18 @@ class RequestUserToJoinGroup(models.Model):
 class HistoryRequestUserToJoinGroup(models.Model):
     user = models.ForeignKey('User',on_delete=models.SET_NULL,null=True,blank=True)
     request_by = models.ForeignKey('User',on_delete=models.CASCADE,related_name='user_request_by')
-    group = models.ForeignKey('task.Group',on_delete=models.CASCADE)
+    group = models.ForeignKey('Group',on_delete=models.CASCADE)
     datetime_submit = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"History Request Join To Group - user:{self.user} group:{self.group}"
+
+
+class Group(BaseModelMixin,models.Model):
+    title = models.CharField(max_length=100)
+    owner = models.ForeignKey('User',on_delete=models.CASCADE)
+    admins = models.ManyToManyField('GroupAdmin',blank=True)
+
+
+class GroupAdmin(BaseModelMixin,models.Model):
+    user = models.ForeignKey('User',on_delete=models.CASCADE)

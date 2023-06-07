@@ -1,4 +1,3 @@
-import uuid
 from django.db import models
 from django.utils.crypto import get_random_string
 from core import validators
@@ -14,18 +13,8 @@ def upload_src_task_file(instance,path):
     return f"files/task/{instance_id}/{get_random_string(10)}.{path}"
 
 
-class Group(BaseModelMixin,models.Model):
-    title = models.CharField(max_length=100)
-    owner = models.ForeignKey('account.User',on_delete=models.CASCADE)
-    admins = models.ManyToManyField('GroupAdmin',blank=True)
-
-
-class GroupAdmin(BaseModelMixin,models.Model):
-    user = models.ForeignKey('account.User',on_delete=models.CASCADE)
-
-
 class Task(BaseModelMixin,models.Model):
-    group = models.ForeignKey('Group',on_delete=models.CASCADE)
+    group = models.ForeignKey('account.Group',on_delete=models.CASCADE)
     users = models.ManyToManyField('account.User')
     title = models.CharField(max_length=200)
     description = models.TextField(null=True,blank=True)

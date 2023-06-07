@@ -1,8 +1,8 @@
 # Taski
 
 ### TODO
-- [ ] 
-- [x] Venus
+- [ ] transfer view or anything about Group, GroupAdmin to 'account' app
+
 
 
 

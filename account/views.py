@@ -3,17 +3,13 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from drf_yasg import openapi
 from rest_framework.views import APIView
-from rest_framework import permissions, parsers
+from rest_framework import permissions as permissions_base , parsers
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from core.mixins.view.swagger import SwaggerMixin
-from core import exceptions
 from core.response import Response
-from core import utils
-from core import redis_py
+from core import utils, redis_py, exceptions
 from core.models import get_object_or_none
-from task import models as task_models
-from . import serializers
-from . import models
+from . import serializers, models, permissions
 
 
 
@@ -21,7 +17,6 @@ USER_CONF = {
     "TIMEOUT_RESET_PASSWORD_CODE": 400, # Second
     "KEY_REDIS_RESET_PASSWORD":"RESET_PASSWORD_{}"
 }
-
 
 
 class Register(SwaggerMixin, APIView):
@@ -39,7 +34,7 @@ class Register(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
     parser_classes = (parsers.MultiPartParser,)
     def post(self, request):
         s = serializers.UserRegisterSerializer(data=request.data)
@@ -48,7 +43,7 @@ class Register(SwaggerMixin, APIView):
             # save new user
             user = s.save()
             # create a group for user (default group - personal group)
-            group = task_models.Group.objects.create(title='Personal group',owner=user)
+            group = models.Group.objects.create(title='Personal group',owner=user)
             user.groups_task.add(group)
         else:
             errors = exceptions.get_errors_serializer(s)
@@ -91,7 +86,7 @@ class Login(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
 
     def post(self, request):
         # s = serializers.UserBasicSerializer(data=request.data)
@@ -115,7 +110,6 @@ class Login(SwaggerMixin, APIView):
         return Response(serializers.UserBasicSerializer(user).data)
 
 
-
 class AccessToken(SwaggerMixin, APIView):
     SWAGGER = {
         'tags': ['Account'],
@@ -131,7 +125,7 @@ class AccessToken(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
 
     def post(self, request):
         s = TokenRefreshSerializer(data=request.data)
@@ -159,7 +153,7 @@ class UserUpdate(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions_base.IsAuthenticated,)
     parser_classes = (parsers.MultiPartParser,)
     def put(self, request):
         user = request.user
@@ -170,8 +164,6 @@ class UserUpdate(SwaggerMixin, APIView):
         else:
             s.update(user,s.validated_data)
         return Response(serializers.UserUpdateSerializer(user).data)
-
-
 
 
 class ResetPassword(SwaggerMixin, APIView):
@@ -191,7 +183,7 @@ class ResetPassword(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
     def post(self, request):
         """
             This endpoint create a random code
@@ -235,7 +227,7 @@ class ResetPasswordCode(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
     def post(self, request):
         """
             This endpoint get code reset
@@ -288,7 +280,7 @@ class UserDelete(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions_base.IsAuthenticated,)
 
     def delete(self, request):
         user = request.user
@@ -305,7 +297,7 @@ class UserDelete(SwaggerMixin, APIView):
 
 class AcceptRequestGroupJoin(SwaggerMixin, APIView):
     SWAGGER = {
-        'tags': ['Account'],
+        'tags': ['Group'],
         'methods': {
             'get': {
                 'title': 'Accept Request Join To Group',
@@ -317,7 +309,7 @@ class AcceptRequestGroupJoin(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions_base.AllowAny,)
 
     def get(self, request, token):
         request_obj = get_object_or_none(models.RequestUserToJoinGroup,token=token)
@@ -333,3 +325,254 @@ class AcceptRequestGroupJoin(SwaggerMixin, APIView):
         s = serializers.AcceptRequestJoinToGroupResponse(request_obj)
         request_obj.delete()
         return Response(s.data)
+
+
+class CreateGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'post': {
+                'title': 'Create Group',
+                'description': 'create groups to perform tasks',
+                'request_body': serializers.CreateGroupSerializer,
+                'responses': {
+                    200: serializers.CreateGroupSerializer,
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        s = serializers.CreateGroupSerializer(user, data=request.data)
+        is_valid = s.is_valid()
+        if is_valid:
+            title = s.validated_data['title']
+            group = models.Group.objects.create(title=title, owner=user)
+            user.groups_task.add(group)
+        else:
+            errors = exceptions.get_errors_serializer(s)
+            raise exceptions.FieldRequired(errors)
+        return Response(serializers.CreateGroupSerializer(group).data)
+
+
+class DeleteGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'delete': {
+                'title': 'Delete Group',
+                'description': 'delete group',
+                'responses': {
+                    200: serializers.DeleteGroupSerializer,
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions.IsOwnerGroup)
+
+    def delete(self, request, group_id):
+        group = request.group
+        response_data = serializers.DeleteGroupSerializer(group).data
+        group.delete()
+        return Response(response_data)
+
+
+class RequestAddUserToGroup(SwaggerMixin, APIView):
+
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'post': {
+                'title': 'Request Add User to Group',
+                'description': 'add user(member) to group',
+                'request_body':serializers.AddUserToGroupSerializer,
+                'responses': {
+                    200: serializers.AddUserToGroupResponseSerializer,
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,permissions.IsOwnerOrAdminGroup)
+
+    def post(self, request, group_id):
+        group = request.group
+        s = serializers.AddUserToGroupSerializer(data=request.data)
+        if s.is_valid():
+            email = s.data['email']
+            user = get_object_or_none(models.User,email=email)
+            if user is None:
+                raise exceptions.UserNotFound
+            models.RequestUserToJoinGroup.objects.create(user=user,group=group)
+            models.HistoryRequestUserToJoinGroup(user=user,group=group,request_by=request.user)
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.AddUserToGroupResponseSerializer(user).data)
+
+
+class GroupUsers(SwaggerMixin, APIView):
+
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'get': {
+                'title': 'Get Users Group',
+                'description': 'get users group',
+                'responses': {
+                    200: serializers.GetGroupUsersSerializer(many=True),
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,)
+
+    def get(self, request, group_id):
+        group = get_object_or_none(models.Group,id=group_id)
+        if group is None:
+            raise exceptions.NotFound(['Group not found'])
+        response_data = serializers.GetGroupUsersSerializer(group.user_set.all(),many=True).data
+        return Response(response_data)
+
+
+class DeleteGroupUser(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'delete': {
+                'title': 'Delete User Group',
+                'description': 'delete user membership group',
+                'responses': {
+                    200: serializers.DeleteGroupUserSerializer,
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,permissions.IsOwnerOrAdminGroup)
+
+    def delete(self, request, group_id,user_id):
+        group = request.group
+        user = get_object_or_none(models.User,id=user_id,groups_task__in=[group.id])
+        if user is None:
+            raise exceptions.NotFound(['User not found'])
+        user.groups_task.remove(group)
+        response_data = serializers.DeleteGroupUserSerializer(user).data
+        return Response(response_data)
+
+
+class GroupAdmins(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'get': {
+                'title': 'Get Admins Group',
+                'description': 'get admins group',
+                'responses': {
+                    200: serializers.GetGroupAdminsSerializer(many=True),
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,)
+
+    def get(self, request, group_id):
+        group = get_object_or_none(models.Group,id=group_id)
+        if group is None:
+            raise exceptions.NotFound(['Group not found'])
+        response_data = serializers.GetGroupAdminsSerializer(group.admins,many=True).data
+        return Response(response_data)
+
+
+class CreateAdminGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'post': {
+                'title': 'Create Admin',
+                'description': 'create an admin for group',
+                'request_body': serializers.CreateAdminGroupSerializer,
+                'responses': {
+                    200: serializers.CreateAdminResponseGroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,)
+
+    def post(self, request):
+        s = serializers.CreateAdminGroupSerializer(data=request.data)
+        if s.is_valid():
+            admin_group = s.save()
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.CreateAdminResponseGroupSerializer(admin_group).data)
+
+
+class AddAdminToGroup(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'put': {
+                'title': 'Add Admin',
+                'description': 'add admin to group',
+                'request_body': serializers.AddAdminToGroupSerializer,
+                'responses': {
+                    200: serializers.AddAdminToGroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions.IsOwnerGroup)
+
+    def put(self, request, group_id):
+        group = request.group
+        s = serializers.AddAdminToGroupSerializer(group,request.data)
+        if s.is_valid():
+            admins = s.validated_data['admins']
+            # add admins to group
+            group.admins.add(*admins)
+            # add admins to users group
+            for admin in admins:
+                admin.user.groups_task.add(group)
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.AddAdminToGroupSerializer(group).data)
+
+
+class DeleteGroupAdmin(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'delete': {
+                'title': 'Delete Admin',
+                'description': 'delete admin group',
+                # 'request_body': serializers.DeleteGroupAdminSerializer,
+                'responses': {
+                    200: serializers.DeleteGroupAdminSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions.IsOwnerGroup)
+
+    def delete(self, request, group_id,admin_id):
+        group = request.group
+        admin = get_object_or_none(models.GroupAdmin,id=admin_id,group__id=group_id)
+        if admin is None:
+            raise exceptions.NotFound(['Admin not found'])
+        group.admins.remove(admin)
+        response_data = serializers.DeleteGroupAdminSerializer(admin).data
+        return Response(response_data)
+
+
+
+

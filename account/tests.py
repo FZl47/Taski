@@ -1,7 +1,6 @@
 import os
 import urllib.request
-from django.core.files import File
-from django.test import TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from core import utils
@@ -118,3 +117,70 @@ class AccountTest(AuthCreateUserMixin,APITestCase):
         req = self.client.delete(reverse('account:delete_user'), data)
         self.assertEqual(req.status_code, 200)
 
+
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
+class GroupTest(AuthCreateUserMixin,APITestCase):
+
+    def authenticate(self,user):
+        self.authenticate_user(user)
+        return user
+
+    def create_group(self):
+        self.authenticate(self.create_user())
+        data = {
+            'title': 'Test Group'
+        }
+        req = self.client.post(reverse('account:create_group'), data)
+        self.assertEqual(req.status_code, 200)
+        return req
+
+    def test_create_group(self):
+        self.create_group()
+
+    def test_delete_group(self):
+        req = self.create_group()
+        self.assertEqual(req.status_code, 200)
+        group_id = req.json().get('data').get('id')
+        req = self.client.delete(reverse('account:delete_group',args=(group_id,)))
+        self.assertEqual(req.status_code,200)
+
+    def test_create_admin_group(self):
+        user = self.create_user()
+        self.authenticate(user)
+        user = self.login(user)
+        data = {
+            'user':user['id']
+        }
+        req = self.client.post(reverse('account:create_admin_group'),data)
+        self.assertEqual(req.status_code, 200)
+
+    def test_add_admin_to_group(self):
+        group = self.create_group()
+        group_id = group.json().get('data').get('id')
+        user = self.create_user()
+        self.authenticate(user)
+        user = self.login(user)
+        data = {
+            'user': user['id']
+        }
+        req = self.client.post(reverse('account:create_admin_group'), data)
+        data = {
+            'admins':[
+                req.json()['data']['id']
+            ]
+        }
+        req = self.client.put(reverse('account:add_admin_to_group', args=(group_id,)),data)
+        self.assertEqual(req.status_code, 200)
+
+
+    def test_add_user_to_group(self):
+        member_user = self.login(self.create_user())
+        group_id = self.create_group().json()['data']['id']
+        owner_user = self.login(self.user)
+        data = {
+            'email':member_user['email']
+        }
+        req = self.client.post(reverse('account:request_add_user_group',args=(group_id,)), data)
+        self.assertEqual(req.status_code, 200)
