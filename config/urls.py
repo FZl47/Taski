@@ -13,7 +13,7 @@ def path(pth, *args, **kwargs):
 
 
 urlpatterns = [
-    path('u/', include('account.urls',namespace='account')),
+    path('', include('account.urls',namespace='account')),
     path('', include('task.urls',namespace='task')),
     path('', include('public.urls',namespace='public')),
     path('admin/', admin.site.urls),
