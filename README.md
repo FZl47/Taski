@@ -1,7 +1,8 @@
 # Taski
 
 ### TODO
-- [x] transfer view or anything about Group, GroupAdmin to 'account' app
+- [ ] Add Task views
+- [ ] Refactor name views
 
 
 ### Add some style in template redoc(Fix Bug)
