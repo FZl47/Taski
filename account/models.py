@@ -88,7 +88,7 @@ class RequestUserToJoinGroup(models.Model):
 
 class HistoryRequestUserToJoinGroup(models.Model):
     user = models.ForeignKey('User',on_delete=models.SET_NULL,null=True,blank=True)
-    request_by = models.ForeignKey('User',on_delete=models.CASCADE,related_name='user_request_by')
+    admin = models.ForeignKey('GroupAdmin',on_delete=models.CASCADE)
     group = models.ForeignKey('Group',on_delete=models.CASCADE)
     datetime_submit = models.DateTimeField(auto_now_add=True)
 
@@ -98,9 +98,16 @@ class HistoryRequestUserToJoinGroup(models.Model):
 
 class Group(BaseModelMixin,models.Model):
     title = models.CharField(max_length=100)
-    owner = models.ForeignKey('User',on_delete=models.CASCADE)
-    admins = models.ManyToManyField('GroupAdmin',blank=True)
+
+    def __str__(self):
+        return self.title
+
 
 
 class GroupAdmin(BaseModelMixin,models.Model):
     user = models.ForeignKey('User',on_delete=models.CASCADE)
+    group = models.ForeignKey('Group',on_delete=models.CASCADE)
+    is_owner = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"# {self.user} - Group : {self.group}"
