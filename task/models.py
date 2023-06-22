@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.crypto import get_random_string
 from core import validators
 from core.models import BaseModelMixin
+from core.mixins.model.delete_file import RemovePastFileMixin
 
 
 @validators.decorators.validator_file_format
@@ -18,7 +19,7 @@ class Task(BaseModelMixin,models.Model):
     users = models.ManyToManyField('account.User')
     title = models.CharField(max_length=200)
     description = models.TextField(null=True,blank=True)
-    attach = models.ManyToManyField('TaskFile')
+    attach = models.ManyToManyField('TaskFile',null=True,blank=True)
     datetime_create = models.DateTimeField(auto_now_add=True)
     datetime_update = models.DateTimeField(auto_now=True)
     timeleft = models.DateTimeField(null=True,blank=True)
@@ -27,8 +28,13 @@ class Task(BaseModelMixin,models.Model):
         return f"#{self.group_id} - {self.title[:30]}"
 
 
-class TaskFile(BaseModelMixin,models.Model):
+class TaskFile(BaseModelMixin,RemovePastFileMixin,models.Model):
+    FIELDS_REMOVE_FILES = ['image']
+
     file = models.FileField(upload_to=upload_src_task_file)
+    datetime_create = models.DateTimeField(auto_now_add=True)
+
+
 
 
 
