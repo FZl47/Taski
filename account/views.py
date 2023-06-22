@@ -43,7 +43,8 @@ class Register(SwaggerMixin, APIView):
             # save new user
             user = s.save()
             # create a group for user (default group - personal group)
-            group = models.Group.objects.create(title='Personal group',owner=user)
+            group = models.Group.objects.create(title='Personal group')
+            owner = models.GroupAdmin.objects.create(user=user,is_owner=True,group=group)
             user.groups_task.add(group)
         else:
             errors = exceptions.get_errors_serializer(s)
@@ -295,6 +296,9 @@ class UserDelete(SwaggerMixin, APIView):
         return Response({'message':'Bye...'})
 
 
+# ============================ Group ============================
+
+
 class AcceptRequestGroupJoin(SwaggerMixin, APIView):
     SWAGGER = {
         'tags': ['Group'],
@@ -303,7 +307,7 @@ class AcceptRequestGroupJoin(SwaggerMixin, APIView):
                 'title': 'Accept Request Join To Group',
                 'description': 'accept request join to group',
                 'responses': {
-                    200: serializers.AcceptRequestJoinToGroupResponse
+                    200: serializers.AcceptRequestJoinToGroupResponseSerializer
                 },
             },
         }
@@ -322,7 +326,7 @@ class AcceptRequestGroupJoin(SwaggerMixin, APIView):
                 raise exceptions.InvalidField(['Token is expired!'])
         else:
             raise exceptions.NotFound(['Token is not valid - request group join not found'])
-        s = serializers.AcceptRequestJoinToGroupResponse(request_obj)
+        s = serializers.AcceptRequestJoinToGroupResponseSerializer(request_obj)
         request_obj.delete()
         return Response(s.data)
 
@@ -350,7 +354,8 @@ class CreateGroup(SwaggerMixin, APIView):
         is_valid = s.is_valid()
         if is_valid:
             title = s.validated_data['title']
-            group = models.Group.objects.create(title=title, owner=user)
+            group = models.Group.objects.create(title=title)
+            owner = models.GroupAdmin.objects.create(user=user, is_owner=True,group=group)
             user.groups_task.add(group)
         else:
             errors = exceptions.get_errors_serializer(s)
@@ -408,7 +413,7 @@ class RequestAddUserToGroup(SwaggerMixin, APIView):
             if user is None:
                 raise exceptions.UserNotFound
             models.RequestUserToJoinGroup.objects.create(user=user,group=group)
-            models.HistoryRequestUserToJoinGroup(user=user,group=group,request_by=request.user)
+            models.HistoryRequestUserToJoinGroup(user=user,group=group,admin=request.admin)
         else:
             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.AddUserToGroupResponseSerializer(user).data)
@@ -504,10 +509,10 @@ class CreateAdminGroup(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated,)
+    permission_classes = (permissions_base.IsAuthenticated,permissions.IsOwnerGroup)
 
-    def post(self, request):
-        s = serializers.CreateAdminGroupSerializer(data=request.data)
+    def post(self, request, group_id):
+        s = serializers.CreateAdminGroupSerializer(request.group,request.data)
         if s.is_valid():
             admin_group = s.save()
         else:
@@ -566,7 +571,7 @@ class DeleteGroupAdmin(SwaggerMixin, APIView):
 
     def delete(self, request, group_id,admin_id):
         group = request.group
-        admin = get_object_or_none(models.GroupAdmin,id=admin_id,group__id=group_id)
+        admin = get_object_or_none(models.GroupAdmin,id=admin_id,group__id=group_id,is_owner=False)
         if admin is None:
             raise exceptions.NotFound(['Admin not found'])
         group.admins.remove(admin)
@@ -574,5 +579,23 @@ class DeleteGroupAdmin(SwaggerMixin, APIView):
         return Response(response_data)
 
 
+class GroupList(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Group'],
+        'methods': {
+            'get': {
+                'title': 'Group List',
+                'description': 'get user groups',
+                'responses': {
+                    200: serializers.GroupSerializer
+                },
+            },
+        }
+    }
 
+    permission_classes = (permissions_base.IsAuthenticated,)
 
+    def get(self, request):
+        user = request.user
+        groups = user.groups_task
+        return Response(serializers.GroupSerializer(groups,many=True).data)
