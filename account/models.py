@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.crypto import get_random_string
+from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from core import exceptions, validators
 from core.models import BaseModelMixin
@@ -15,7 +16,7 @@ def upload_image_user(instance,path):
     """
         return src file in media
     """
-    # instance_id = instance.pk or get_random_string(13)
+    path = str(path).split('.')[-1]
     instance_email = str(instance.email).replace('.','_')
     return f"images/users/{instance_email}/{get_random_string(10)}.{path}"
 
@@ -53,7 +54,7 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
     email = models.EmailField(_('email address'), unique = True)
-    image = models.ImageField(upload_to=upload_image_user,null=True,blank=True)
+    image = models.ImageField(upload_to=upload_image_user,null=True,blank=True,max_length=300)
     groups_task = models.ManyToManyField('Group')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -67,6 +68,10 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
 
     def get_token_refresh(self):
         return str(RefreshToken.for_user(self))
+
+    def get_image(self):
+        if self.image:
+            return settings.GET_FULL_HOST(self.image.url)
 
 
 class RequestUserToJoinGroup(models.Model):
@@ -101,7 +106,6 @@ class Group(BaseModelMixin,models.Model):
 
     def __str__(self):
         return self.title
-
 
 
 class GroupAdmin(BaseModelMixin,models.Model):
