@@ -1,5 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+
+import account.models
 from . import models
 
 
@@ -49,3 +51,35 @@ class TaskSerializer(ModelSerializer):
     class Meta:
         model = models.Task
         exclude = ('group', 'users')
+
+
+class DeleteTaskSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Task
+        fields = ('id','group')
+
+
+class UpdateTaskSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Task
+        fields = ('title','description','label','timeleft')
+        extra_kwargs = {
+            'title':{
+                'required':False
+            },
+        }
+
+
+class UpdateUsersTaskSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Task
+        fields = ('title','users')
+        extra_kwargs = {
+            'title':{
+                'read_only':True
+            }
+        }
+
