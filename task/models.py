@@ -36,10 +36,11 @@ class Task(BaseModelMixin,models.Model):
 
 
 class TaskFile(BaseModelMixin,RemovePastFileMixin,models.Model):
-    FIELDS_REMOVE_FILES = ['image']
+    FIELDS_REMOVE_FILES = ['file']
     task = models.ForeignKey('Task',on_delete=models.CASCADE)
     file = models.FileField(upload_to=upload_src_task_file,max_length=300)
     datetime_create = models.DateTimeField(auto_now_add=True)
+    datetime_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"ATTACH FILE #{self.id} - {self.task.title}"
