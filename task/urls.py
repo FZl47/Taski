@@ -9,4 +9,7 @@ urlpatterns = [
     path('task/<uuid:group_id>/<uuid:task_id>/users/update', views.UpdateUsersTask.as_view(), name='update_users_task'),
     path('task/<uuid:group_id>/<uuid:task_id>/delete', views.DeleteTask.as_view(), name='delete_task'),
     path('task/file/<uuid:group_id>/create', views.CreateTaskFile.as_view(), name='create_task_file'),
+    path('task/file/<uuid:group_id>/<uuid:task_id>/<uuid:task_file_id>/get', views.GetTaskFile.as_view(), name='get_task_file'),
+    path('task/file/<uuid:group_id>/<uuid:task_id>/<uuid:task_file_id>/update', views.UpdateTaskFile.as_view(), name='update_task_file'),
+    path('task/file/<uuid:group_id>/<uuid:task_id>/<uuid:task_file_id>/delete', views.DeleteTaskFile.as_view(), name='delete_task_file'),
 ]
