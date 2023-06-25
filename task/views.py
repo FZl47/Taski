@@ -27,13 +27,11 @@ class TaskList(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated,)
+    permission_classes = (permissions_base.IsAuthenticated,permissions_account.IsMemberShip)
 
     def get(self, request, group_id):
+        group = request.group
         user = request.user
-        group = get_object_or_none(account_models.Group, id=group_id, user__id__in=[user.id])
-        if group is None:
-            raise exceptions.NotFound(['Group object not found'])
         tasks = user.task_set.filter(group__id__in=[group.id])
         sort_by = request.query_params.get('sort_by', 'latest')
         match sort_by:
@@ -179,7 +177,7 @@ class CreateTaskFile(SwaggerMixin, APIView):
         'tags': ['Task'],
         'methods': {
             'post': {
-                'title': 'Create Task Attach File',
+                'title': 'Create Attach File Task',
                 'description': 'create file attach',
                 'request_body': serializers.CreateTaskFileAttachSerializer,
                 'responses': {
@@ -199,3 +197,82 @@ class CreateTaskFile(SwaggerMixin, APIView):
         else:
             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.CreateTaskFileAttachResponseSerializer(task_file_obj).data)
+
+
+class UpdateTaskFile(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'put': {
+                'title': 'Update Attach File Task',
+                'description': 'update file attach',
+                'request_body': serializers.UpdateTaskFileAttachSerializer,
+                'responses': {
+                    200: serializers.UpdateTaskFileAttachResponseSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+    parser_classes = (MultiPartParser,)
+
+    def put(self, request, group_id, task_id, task_file_id):
+        s = serializers.UpdateTaskFileAttachSerializer(data=request.data)
+        task_file_obj = get_object_or_none(models.TaskFile, id=task_file_id, task_id=task_id, task__group__id=group_id)
+        if task_file_obj is None:
+            raise exceptions.NotFound(['Task file not found'])
+        if s.is_valid():
+            s.update(task_file_obj,s.validated_data)
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.UpdateTaskFileAttachResponseSerializer(task_file_obj).data)
+
+
+class GetTaskFile(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'get': {
+                'title': 'Get Attach File Task',
+                'description': 'get file attach',
+                'responses': {
+                    200: serializers.GetTaskFileAttachSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,permissions_account.IsMemberShip)
+    parser_classes = (MultiPartParser,)
+
+    def get(self, request, group_id, task_id, task_file_id):
+        task_file_obj = get_object_or_none(models.TaskFile, id=task_file_id, task_id=task_id, task__group__id=group_id)
+        if task_file_obj is None:
+            raise exceptions.NotFound(['Task file not found'])
+        return Response(serializers.GetTaskFileAttachSerializer(task_file_obj).data)
+
+
+class DeleteTaskFile(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'delete': {
+                'title': 'Delete Attach File Task',
+                'description': 'delete file attach',
+                'responses': {
+                    200: serializers.DeleteTaskFileAttachSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+
+    def delete(self, request, group_id, task_id, task_file_id):
+        task_file_obj = get_object_or_none(models.TaskFile,id=task_file_id,task_id=task_id,task__group__id=group_id)
+        if task_file_obj:
+            task_file_obj.delete()
+        else:
+            raise exceptions.NotFound(['Task file not found'])
+        return Response(serializers.DeleteTaskFileAttachSerializer(task_file_obj).data)
