@@ -16,7 +16,6 @@ class TaskListViewParameterSerializer(serializers.Serializer):
 
 
 class CreateTaskFileAttachSerializer(ModelSerializer):
-
     class Meta:
         model = models.TaskFile
         fields = ('file', 'task')
@@ -27,7 +26,7 @@ class CreateTaskFileAttachResponseSerializer(ModelSerializer):
 
     class Meta:
         model = models.TaskFile
-        fields = ('id','file', 'task')
+        fields = ('id', 'file', 'task')
 
 
 class GetTaskFileAttachSerializer(ModelSerializer):
@@ -35,14 +34,34 @@ class GetTaskFileAttachSerializer(ModelSerializer):
 
     class Meta:
         model = models.TaskFile
-        fields = ('id','file')
+        fields = ('id', 'file')
 
 
 class CreateTaskSerializer(ModelSerializer):
-
     class Meta:
         model = models.Task
         fields = '__all__'
+
+
+class UpdateTaskFileAttachSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.TaskFile
+        fields = ('file',)
+
+
+class UpdateTaskFileAttachResponseSerializer(ModelSerializer):
+    file = serializers.URLField(source='get_file')
+
+    class Meta:
+        model = models.TaskFile
+        fields = ('id', 'file')
+
+
+class DeleteTaskFileAttachSerializer(ModelSerializer):
+    class Meta:
+        model = models.TaskFile
+        fields = ('task',)
 
 
 class TaskSerializer(ModelSerializer):
@@ -54,32 +73,28 @@ class TaskSerializer(ModelSerializer):
 
 
 class DeleteTaskSerializer(ModelSerializer):
-
     class Meta:
         model = models.Task
-        fields = ('id','group')
+        fields = ('id', 'group')
 
 
 class UpdateTaskSerializer(ModelSerializer):
-
     class Meta:
         model = models.Task
-        fields = ('title','description','label','timeleft')
+        fields = ('title', 'description', 'label', 'timeleft')
         extra_kwargs = {
-            'title':{
-                'required':False
+            'title': {
+                'required': False
             },
         }
 
 
 class UpdateUsersTaskSerializer(ModelSerializer):
-
     class Meta:
         model = models.Task
-        fields = ('title','users')
+        fields = ('title', 'users')
         extra_kwargs = {
-            'title':{
-                'read_only':True
+            'title': {
+                'read_only': True
             }
         }
-
