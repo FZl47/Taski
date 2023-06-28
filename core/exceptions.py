@@ -158,3 +158,11 @@ class Conflict(Exception):
     status_code = status.HTTP_409_CONFLICT
     default_code = "conflict"
     default_detail = _execption_detail(status_code, ['Conflict'])
+
+
+class FileTooLarge(Exception):
+    status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+    default_code = "content_size_too_large"
+    default_detail = _execption_detail(status_code, ['Size Content too Large'])
+
+
