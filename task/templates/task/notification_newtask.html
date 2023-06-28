@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Task !</title>
+    <style>
+
+        p{
+            margin: 3px;
+            padding: 0;
+        }
+
+        .title{
+            margin: 20px auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h3>Hello, dear {{ task.user.first_name }}</h3>
+    <h4 class="title">New task for you from group : <b>{{ task.group.title }}</b></h4>
+    <p>Task ID : <code>{{ task.id }}</code></p>
+    <p>Task title : {{ task.title }}</p>
+    <p>Task description : {{ task.description }}</p>
+    <p>Task label : {{ task.label }}</p>
+    <p>Task timeleft : {{ task.timeleft|default_if_none:'not-timeleft' }}</p>
+</body>
+</html>
