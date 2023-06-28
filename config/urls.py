@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from core.mixins.view import swagger
 
+import test
 
 def path(pth, *args, **kwargs):
     return _path(f"{settings.NAME_POINT_API}/{pth}", *args, **kwargs)
@@ -17,6 +18,8 @@ urlpatterns = [
     path('', include('task.urls',namespace='task')),
     path('', include('public.urls',namespace='public')),
     path('admin/', admin.site.urls),
+
+    path('test',test.test_view)
 ]
 
 
@@ -33,8 +36,8 @@ schema_view = get_schema_view(
     permission_classes=[permissions.AllowAny],
 )
 urlpatterns.extend([
-    re_path(r'swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # re_path(r'swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    # re_path(r'swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ])
 
