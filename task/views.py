@@ -33,6 +33,15 @@ class TaskList(SwaggerMixin, APIView):
         group = request.group
         user = request.user
         tasks = user.task_set.filter(group__id__in=[group.id])
+        is_completed_param = request.query_params.get('is_completed','all')
+        match is_completed_param:
+            case True:
+                tasks = tasks.filter(is_completed=True)
+            case False:
+                tasks = tasks.filter(is_completed=False)
+            case _:
+                # default all tasks
+                pass
         sort_by = request.query_params.get('sort_by', 'latest')
         match sort_by:
             case 'latest':
@@ -53,8 +62,8 @@ class CreateTask(SwaggerMixin, APIView):
         'methods': {
             'post': {
                 'title': 'Create Task',
-                'description': 'create task for users',
-                'request_body': serializers.CreateTaskSerializer,
+                'description': 'create task for user',
+                'request_body': serializers.CreateTaskRequestBodySerializer,
                 'responses': {
                     200: serializers.CreateTaskSerializer
                 },
@@ -68,7 +77,7 @@ class CreateTask(SwaggerMixin, APIView):
         data = request.data.copy()  # add group value field
         data.update({
             'group': group_id,
-            'create_by': request.admin.id
+            'created_by': request.admin.id
         })
         s = serializers.CreateTaskSerializer(data=data)
         if s.is_valid():
@@ -139,37 +148,37 @@ class UpdateTask(SwaggerMixin, APIView):
         return Response(serializers.UpdateTaskSerializer(task_obj).data)
 
 
-class UpdateUsersTask(SwaggerMixin, APIView):
-    SWAGGER = {
-        'tags': ['Task'],
-        'methods': {
-            'put': {
-                'title': 'Update Users Task',
-                'description': 'update users task',
-                'request_body': serializers.UpdateUsersTaskSerializer,
-                'responses': {
-                    200: serializers.UpdateUsersTaskSerializer
-                },
-            },
-        }
-    }
-
-    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
-
-    def put(self, request, group_id, task_id):
-        task_obj = get_object_or_none(models.Task, id=task_id, group_id=group_id)
-        if task_obj is None:
-            raise exceptions.NotFound(['Task not found'])
-        s = serializers.UpdateUsersTaskSerializer(instance=task_obj, data=request.data)
-        if s.is_valid() is False:
-            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
-        # check all users are members of the group
-        users = s.validated_data['users']
-        users_in_group = task_obj.group.user_set.filter(email__in=users).count() == len(users)
-        if users_in_group is False:
-            raise exceptions.PermissionDenied(['Cannot assign a task to user|users not a member of the group'])
-        task_obj = s.update(task_obj, s.validated_data)
-        return Response(serializers.UpdateUsersTaskSerializer(task_obj).data)
+# class UpdateUsersTask(SwaggerMixin, APIView):
+#     SWAGGER = {
+#         'tags': ['Task'],
+#         'methods': {
+#             'put': {
+#                 'title': 'Update Users Task',
+#                 'description': 'update users task',
+#                 'request_body': serializers.UpdateUsersTaskSerializer,
+#                 'responses': {
+#                     200: serializers.UpdateUsersTaskSerializer
+#                 },
+#             },
+#         }
+#     }
+#
+#     permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+#
+#     def put(self, request, group_id, task_id):
+#         task_obj = get_object_or_none(models.Task, id=task_id, group_id=group_id)
+#         if task_obj is None:
+#             raise exceptions.NotFound(['Task not found'])
+#         s = serializers.UpdateUsersTaskSerializer(instance=task_obj, data=request.data)
+#         if s.is_valid() is False:
+#             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+#         # check all users are members of the group
+#         users = s.validated_data['users']
+#         users_in_group = task_obj.group.user_set.filter(email__in=users).count() == len(users)
+#         if users_in_group is False:
+#             raise exceptions.PermissionDenied(['Cannot assign a task to user|users not a member of the group'])
+#         task_obj = s.update(task_obj, s.validated_data)
+#         return Response(serializers.UpdateUsersTaskSerializer(task_obj).data)
 
 
 class CreateTaskFile(SwaggerMixin, APIView):
