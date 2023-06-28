@@ -296,6 +296,27 @@ class UserDelete(SwaggerMixin, APIView):
         return Response({'message':'Bye...'})
 
 
+class GroupList(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Account'],
+        'methods': {
+            'get': {
+                'title': 'Group List',
+                'description': 'get user groups',
+                'responses': {
+                    200: serializers.GroupSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        groups = user.groups_task
+        return Response(serializers.GroupSerializer(groups,many=True).data)
+
 # ============================ Group ============================
 
 
@@ -578,24 +599,3 @@ class DeleteGroupAdmin(SwaggerMixin, APIView):
         response_data = serializers.DeleteGroupAdminSerializer(admin).data
         return Response(response_data)
 
-
-class GroupList(SwaggerMixin, APIView):
-    SWAGGER = {
-        'tags': ['Group'],
-        'methods': {
-            'get': {
-                'title': 'Group List',
-                'description': 'get user groups',
-                'responses': {
-                    200: serializers.GroupSerializer
-                },
-            },
-        }
-    }
-
-    permission_classes = (permissions_base.IsAuthenticated,)
-
-    def get(self, request):
-        user = request.user
-        groups = user.groups_task
-        return Response(serializers.GroupSerializer(groups,many=True).data)
