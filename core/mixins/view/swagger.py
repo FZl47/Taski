@@ -33,6 +33,7 @@ def _init():
             del SWAGGER_CONF['title']
             del SWAGGER_CONF['description']
             SWAGGER_CONF['tags'] = tags
+            SWAGGER_CONF['security'] = SWAGGER.get('security',None)
             method_func = swagger_auto_schema(**SWAGGER_CONF)(method_func)
             setattr(view, method, method_func)
 
