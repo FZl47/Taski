@@ -14,5 +14,5 @@ def send_email_request_to_join_group(sender,instance,created,**kwargs):
             'group':instance.group,
             'link_request_accept':settings.GET_FULL_HOST(reverse('account:accept_request_group_join',args=(instance.token,)))
         }
-        request_content = render_to_string('public/components/request_join_group.html',context)
+        request_content = render_to_string('account/request_join_group.html', context)
         send_email_html('Request Join To Group !', request_content,[instance.user.email])
