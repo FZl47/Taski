@@ -11,7 +11,7 @@ def send_notify_task_timeleft(task_id,*args,**kwargs):
             'task': task,
             'type_period_time':kwargs.get('type_period_time')
         }
-        res_html = render_to_string('public/components/notification_task_remind.html', context)
+        res_html = render_to_string('task/notification_task_remind.html', context)
         send_email_html('Remind Task ..', res_html, [task.user.email])
     else:
         # task not found
@@ -22,5 +22,5 @@ def send_notify_task_new(task,**kwargs):
     context = {
         'task':task
     }
-    res_html = render_to_string('public/components/notification_newtask.html',context)
+    res_html = render_to_string('task/notification_newtask.html', context)
     send_email_html('New Task !',res_html,[task.user.email])
