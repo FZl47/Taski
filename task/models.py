@@ -37,9 +37,7 @@ class Task(BaseModelMixin, models.Model):
     title = models.CharField(max_length=200)
     label = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    datetime_created = models.DateTimeField(auto_now_add=True)
-    datetime_updated = models.DateTimeField(auto_now=True)
-    timeleft = models.DateTimeField(null=True, blank=True, validators=[MinValueValidator(get_datetime())])
+    timeleft = models.DateTimeField(null=True, blank=True, validators=[MinValueValidator(get_datetime)])
     is_completed = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
@@ -57,38 +55,42 @@ class Task(BaseModelMixin, models.Model):
     def get_time_left(self):
         td = self.timeleft - get_datetime()
         timeleft = namedtuple('timeleft', ['days', 'hours', 'minutes'])
-
         return timeleft(*get_days_hours_minutes_td(td))
 
     def get_name_obj_task_schedule_timeleft(self):
         return f"task_schedule_timeleft_{self.id}"
 
 
-class TaskFile(BaseModelMixin, RemovePastFileMixin, models.Model):
+class FileMixin(RemovePastFileMixin, models.Model):
     FIELDS_REMOVE_FILES = ['file']
-    task = models.ForeignKey('Task', on_delete=models.CASCADE)
     file = models.FileField(upload_to=upload_src_task_file, max_length=300, validators=[validators.limit_file_size],
                             help_text=f'Size file should not exceed {settings.MAX_UPLOAD_SIZE_LABEL}')
-    datetime_create = models.DateTimeField(auto_now_add=True)
-    datetime_update = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class TaskFile(BaseModelMixin,FileMixin):
+    task = models.ForeignKey('Task', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"ATTACH FILE #{self.id} - {self.task.title}"
+        return f"ATTACH FILE #{self.id} - {self.task}"
 
     def get_file(self):
         return settings.GET_FULL_HOST(self.file.url)
 
 
-class TaskResponse(models.Model):
+class TaskResponse(BaseModelMixin, models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     user = models.ForeignKey('account.User', on_delete=models.CASCADE)
     content = models.TextField()
-    datetime_create = models.DateTimeField(auto_now_add=True)
-    datetime_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Task Response - #{self.id} - {self.task.title}"
+        return f"Task Response - #{self.id} - {self.task}"
 
 
-class TaskFileResponse(models.Model):
-    pass
+class TaskFileResponse(BaseModelMixin,FileMixin):
+    task_response = models.ForeignKey('TaskResponse',on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"# Task File Response - #{self.id} - {self.task_response.task}"
