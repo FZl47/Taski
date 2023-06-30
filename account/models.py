@@ -74,16 +74,15 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
             return settings.GET_FULL_HOST(self.image.url)
 
 
-class RequestUserToJoinGroup(models.Model):
+class RequestUserToJoinGroup(BaseModelMixin, models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey('User',on_delete=models.CASCADE)
     group = models.ForeignKey('Group',on_delete=models.CASCADE)
-    datetime_create = models.DateTimeField(auto_now_add=True)
     expire_after_days = models.PositiveIntegerField(default=7)
 
     def is_valid(self):
         now = datetime.datetime.now()
-        if now < (self.datetime_create + datetime.timedelta(days=self.expire_after_days)):
+        if now < (self.datetime_created + datetime.timedelta(days=self.expire_after_days)):
             return True
         return False
 
@@ -91,7 +90,7 @@ class RequestUserToJoinGroup(models.Model):
         return f"Request Join To Group - user:{self.user} group:{self.group}"
 
 
-class HistoryRequestUserToJoinGroup(models.Model):
+class HistoryRequestUserToJoinGroup(BaseModelMixin, models.Model):
     user = models.ForeignKey('User',on_delete=models.SET_NULL,null=True,blank=True)
     admin = models.ForeignKey('GroupAdmin',on_delete=models.CASCADE)
     group = models.ForeignKey('Group',on_delete=models.CASCADE)

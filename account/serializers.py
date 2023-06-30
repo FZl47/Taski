@@ -29,11 +29,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = models.User
         fields = ('first_name', 'last_name', 'image', 'email', 'password')
         extra_kwargs = {
-            'image':{
-                'required':False
+            'image': {
+                'required': False
             },
-            'password':{
-                'validators':[
+            'password': {
+                'validators': [
                     MinLengthValidator(8)
                 ]
             }
@@ -58,8 +58,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = models.User
         fields = ('first_name', 'last_name', 'image')
         extra_kwargs = {
-            'first_name':{
-                'required':False
+            'first_name': {
+                'required': False
             },
             'last_name': {
                 'required': False
@@ -73,13 +73,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         }
 
 
-
-
 class UserResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
     def validate(self, attrs):
-        email = attrs.get('email',None)
+        email = attrs.get('email', None)
         if not email:
             raise exceptions.FieldRequired(['Field email required'])
         try:
@@ -91,16 +89,14 @@ class UserResetPasswordSerializer(serializers.Serializer):
 
 class UserResetPasswordCodeSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    new_password = serializers.CharField(max_length=130,required=True,validators=[MinLengthValidator(8)])
-    code = serializers.CharField(max_length=20,required=True)
-
+    new_password = serializers.CharField(max_length=130, required=True, validators=[MinLengthValidator(8)])
+    code = serializers.CharField(max_length=20, required=True)
 
     def update(self, instance, validated_data):
         instance.set_password(validated_data['new_password'])
 
 
 class UserDeleteSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.User
         fields = ('password',)
@@ -108,9 +104,10 @@ class UserDeleteSerializer(serializers.ModelSerializer):
 
 class UserBasicSerializer(TokensSerializer, serializers.ModelSerializer):
     image = serializers.URLField(source='get_image')
+
     class Meta:
         model = models.User
-        fields = ('id','first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh', 'groups_task')
+        fields = ('id', 'first_name', 'last_name', 'last_login', 'image', 'email', 'access', 'refresh', 'groups_task')
 
 
 class AcceptRequestJoinToGroupResponseSerializer(serializers.ModelSerializer):
@@ -119,31 +116,27 @@ class AcceptRequestJoinToGroupResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.RequestUserToJoinGroup
-        fields = ('user','group_title','group_id')
-        
-        
+        fields = ('user', 'group_title', 'group_id')
 
 
 class CreateGroupSerializer(ModelSerializer):
-
     class Meta:
         model = models.Group
-        fields = ('id','title')
+        fields = ('id', 'title')
         extra_kwargs = {
-            'id':{
-                'read_only':True
+            'id': {
+                'read_only': True
             }
         }
 
 
 class DeleteGroupSerializer(ModelSerializer):
-
     class Meta:
         model = models.Group
-        fields = ('id','title')
+        fields = ('id', 'title')
         extra_kwargs = {
-            'title':{
-                'read_only':True
+            'title': {
+                'read_only': True
             }
         }
 
@@ -151,9 +144,7 @@ class DeleteGroupSerializer(ModelSerializer):
 class CreateAdminGroupSerializer(ModelSerializer):
     class Meta:
         model = models.GroupAdmin
-        fields = ('user','group_id')
-
-
+        fields = ('user', 'group_id')
 
 
 class CreateAdminResponseGroupSerializer(ModelSerializer):
@@ -161,57 +152,52 @@ class CreateAdminResponseGroupSerializer(ModelSerializer):
         model = models.GroupAdmin
         fields = ('id',)
         extra_kwargs = {
-            'id':{
-                'help_text':'ID admin'
+            'id': {
+                'help_text': 'ID admin'
             }
         }
 
 
-
 class AddAdminToGroupSerializer(ModelSerializer):
-
     class Meta:
         model = models.Group
-        fields = ('id','admins')
+        fields = ('id', 'admins')
         extra_kwargs = {
-            'id':{
-                'read_only':True,
-                'help_text':'ID group'
+            'id': {
+                'read_only': True,
+                'help_text': 'ID group'
             },
-            'admins':{
-                'required':True
+            'admins': {
+                'required': True
             }
         }
 
 
 class GetAdminGroupSerializer(ModelSerializer):
-
     class Meta:
         model = models.Group
-        fields = ('id','admins')
+        fields = ('id', 'admins')
         extra_kwargs = {
-            'id':{
-                'read_only':True,
-                'help_text':'ID group'
+            'id': {
+                'read_only': True,
+                'help_text': 'ID group'
             },
-            'admins':{
-                'required':True
+            'admins': {
+                'required': True
             }
         }
 
 
 class GetGroupUsersSerializer(ModelSerializer):
-
     class Meta:
         model = models.User
-        fields = ('id','first_name','last_name','image')
+        fields = ('id', 'first_name', 'last_name', 'image')
 
 
 class DeleteGroupUserSerializer(ModelSerializer):
-
     class Meta:
         model = models.User
-        fields = ('id','first_name','last_name','image','email')
+        fields = ('id', 'first_name', 'last_name', 'image', 'email')
 
 
 class GetGroupAdminsSerializer(ModelSerializer):
@@ -221,7 +207,7 @@ class GetGroupAdminsSerializer(ModelSerializer):
 
     class Meta:
         model = models.GroupAdmin
-        fields = ('id','first_name','last_name')
+        fields = ('id', 'first_name', 'last_name')
 
 
 class DeleteGroupAdminSerializer(GetGroupAdminsSerializer):
@@ -233,14 +219,12 @@ class AddUserToGroupSerializer(serializers.Serializer):
 
 
 class AddUserToGroupResponseSerializer(ModelSerializer):
-
     class Meta:
         model = models.User
-        fields = ('id','first_name','last_name','email')
+        fields = ('id', 'first_name', 'last_name', 'email')
 
 
 class GroupSerializer(ModelSerializer):
-
     class Meta:
         model = models.Group
         fields = '__all__'
