@@ -85,6 +85,7 @@ class CreateTaskSerializer(ModelSerializer):
 class TaskSerializer(ModelSerializer):
     attach = GetTaskFileAttachSerializer(many=True, source='taskfile_set', read_only=True)
     expired = serializers.BooleanField(source='is_expired',read_only=True)
+    time_late = serializers.CharField(source='get_time_late',read_only=True)
 
     class Meta:
         model = models.Task
