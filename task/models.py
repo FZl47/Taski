@@ -61,7 +61,7 @@ class Task(BaseModelMixin, models.Model):
         return f"task_schedule_timeleft_{self.id}"
 
 
-class FileMixin(RemovePastFileMixin, models.Model):
+class FileModelMixin(RemovePastFileMixin, models.Model):
     FIELDS_REMOVE_FILES = ['file']
     file = models.FileField(upload_to=upload_src_task_file, max_length=300, validators=[validators.limit_file_size],
                             help_text=f'Size file should not exceed {settings.MAX_UPLOAD_SIZE_LABEL}')
@@ -69,15 +69,17 @@ class FileMixin(RemovePastFileMixin, models.Model):
     class Meta:
         abstract = True
 
+    def get_file(self):
+        return settings.GET_FULL_HOST(self.file.url)
 
-class TaskFile(BaseModelMixin,FileMixin):
+
+class TaskFile(BaseModelMixin,FileModelMixin):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"ATTACH FILE #{self.id} - {self.task}"
 
-    def get_file(self):
-        return settings.GET_FULL_HOST(self.file.url)
+
 
 
 class TaskResponse(BaseModelMixin, models.Model):
@@ -89,8 +91,9 @@ class TaskResponse(BaseModelMixin, models.Model):
         return f"Task Response - #{self.id} - {self.task}"
 
 
-class TaskFileResponse(BaseModelMixin,FileMixin):
+class TaskFileResponse(BaseModelMixin,FileModelMixin):
     task_response = models.ForeignKey('TaskResponse',on_delete=models.CASCADE)
 
     def __str__(self):
         return f"# Task File Response - #{self.id} - {self.task_response.task}"
+
