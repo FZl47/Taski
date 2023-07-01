@@ -285,3 +285,24 @@ class DeleteTaskFile(SwaggerMixin, APIView):
         else:
             raise exceptions.NotFound(['Task file not found'])
         return Response(serializers.DeleteTaskFileAttachSerializer(task_file_obj).data)
+
+
+class CreateTaskResponse(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'post': {
+                'title': 'Create Task Response',
+                'description': 'create task response',
+                'responses': {
+                    200: serializers.CreateTaskResponseSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+
+    def post(self, request,task_id):
+        # TODO : should be complete
+        pass
