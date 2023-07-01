@@ -123,3 +123,26 @@ class UpdateTaskSerializer(ModelSerializer):
 #                 'read_only': True
 #             }
 #         }
+
+
+class CreateTaskResponseSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.TaskResponse
+        field = '__all__'
+
+
+class CreateTaskResponseFileSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.TaskFileResponse
+        field = '__all__'
+
+
+class CreateTaskResponseFileResponseSerializer(ModelSerializer):
+    file = serializers.URLField(source='get_file')
+
+    class Meta:
+        model = models.TaskFileResponse
+        field = '__all__'
+
