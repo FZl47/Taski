@@ -1,7 +1,5 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-
-import account.models
 from . import models
 
 
@@ -35,7 +33,7 @@ class CreateTaskFileAttachResponseSerializer(ModelSerializer):
 
     class Meta:
         model = models.TaskFile
-        fields = ('id', 'file', 'task')
+        fields = ('id', 'file', 'task', 'datetime_created', 'datetime_updated')
 
 
 class GetTaskFileAttachSerializer(ModelSerializer):
@@ -43,7 +41,7 @@ class GetTaskFileAttachSerializer(ModelSerializer):
 
     class Meta:
         model = models.TaskFile
-        fields = ('id', 'file')
+        fields = ('id', 'file', 'datetime_created', 'datetime_updated')
 
 
 class UpdateTaskFileAttachSerializer(ModelSerializer):
@@ -57,7 +55,7 @@ class UpdateTaskFileAttachResponseSerializer(ModelSerializer):
 
     class Meta:
         model = models.TaskFile
-        fields = ('id', 'file')
+        fields = ('id', 'file', 'datetime_updated')
 
 
 class DeleteTaskFileAttachSerializer(ModelSerializer):
@@ -84,8 +82,8 @@ class CreateTaskSerializer(ModelSerializer):
 
 class TaskSerializer(ModelSerializer):
     attach = GetTaskFileAttachSerializer(many=True, source='taskfile_set', read_only=True)
-    expired = serializers.BooleanField(source='is_expired',read_only=True)
-    time_late = serializers.CharField(source='get_time_late',read_only=True)
+    expired = serializers.BooleanField(source='is_expired', read_only=True)
+    time_late = serializers.CharField(source='get_time_late', read_only=True)
 
     class Meta:
         model = models.Task
@@ -114,35 +112,69 @@ class UpdateTaskSerializer(ModelSerializer):
             }
         }
 
-# class UpdateUserTaskSerializer(ModelSerializer):
-#     class Meta:
-#         model = models.Task
-#         fields = ('title', 'user')
-#         extra_kwargs = {
-#             'title': {
-#                 'read_only': True
-#             }
-#         }
+
+class CreateTaskResponseRequestBodySerializer(ModelSerializer):
+    class Meta:
+        model = models.TaskResponse
+        fields = ('content',)
 
 
 class CreateTaskResponseSerializer(ModelSerializer):
-
     class Meta:
         model = models.TaskResponse
-        field = '__all__'
+        fields = '__all__'
 
 
-class CreateTaskResponseFileSerializer(ModelSerializer):
-
+class CreateTaskResponseResponseSerializer(ModelSerializer):
     class Meta:
-        model = models.TaskFileResponse
-        field = '__all__'
+        model = models.TaskResponse
+        exclude = ('user',)
 
 
-class CreateTaskResponseFileResponseSerializer(ModelSerializer):
+class UpdateTaskResponseSerializer(ModelSerializer):
+    class Meta:
+        model = models.TaskResponse
+        fields = ('content', 'user', 'task')
+        extra_kwargs = {
+            'user': {
+                'read_only': True
+            },
+            'task': {
+                'read_only': True
+            }
+        }
+
+
+class TaskResponseFileSerializer(ModelSerializer):
     file = serializers.URLField(source='get_file')
 
     class Meta:
-        model = models.TaskFileResponse
-        field = '__all__'
+        model = models.TaskResponseFile
+        fields = ('file', 'datetime_created', 'datetime_updated')
 
+
+class GetTaskResponseSerializer(ModelSerializer):
+    attach = TaskResponseFileSerializer(many=True, source=' taskfileresponse_set', read_only=True)
+
+    class Meta:
+        model = models.TaskResponse
+        exclude = ('user',)
+
+
+class DeleteTaskResponseSerializer(ModelSerializer):
+    attach_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.TaskResponse
+        exclude = ('id', 'user', 'datetime_created', 'datetime_updated')
+
+    def get_attach_count(self, obj):
+        return obj.taskfileresponse_set.count()
+#
+#
+# class CreateTaskResponseFileResponseSerializer(ModelSerializer):
+#     file = serializers.URLField(source='get_file')
+#
+#     class Meta:
+#         model = models.TaskFileResponse
+#         fields = '__all__'

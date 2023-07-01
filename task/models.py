@@ -23,7 +23,7 @@ class TaskManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_active=True)
 
-    def get(self,*args,**kwargs):
+    def get(self, *args, **kwargs):
         try:
             return super().get(is_active=True, *args, **kwargs)
         except:
@@ -47,7 +47,7 @@ class Task(BaseModelMixin, models.Model):
         return f"#{self.group_id} - {self.title[:30]}"
 
     def is_expired(self):
-        return True # TODO: should be complete
+        return True  # TODO: should be complete
 
     def get_time_late(self):
         pass  # TODO: should be complete | return: time late after expiration
@@ -73,27 +73,23 @@ class FileModelMixin(RemovePastFileMixin, models.Model):
         return settings.GET_FULL_HOST(self.file.url)
 
 
-class TaskFile(BaseModelMixin,FileModelMixin):
+class TaskFile(BaseModelMixin, FileModelMixin):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"ATTACH FILE #{self.id} - {self.task}"
 
 
-
-
 class TaskResponse(BaseModelMixin, models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
-    user = models.ForeignKey('account.User', on_delete=models.CASCADE)
     content = models.TextField()
 
     def __str__(self):
         return f"Task Response - #{self.id} - {self.task}"
 
 
-class TaskFileResponse(BaseModelMixin,FileModelMixin):
-    task_response = models.ForeignKey('TaskResponse',on_delete=models.CASCADE)
+class TaskResponseFile(BaseModelMixin, FileModelMixin):
+    task_response = models.ForeignKey('TaskResponse', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"# Task File Response - #{self.id} - {self.task_response.task}"
-

@@ -536,6 +536,7 @@ class CreateAdminGroup(SwaggerMixin, APIView):
         s = serializers.CreateAdminGroupSerializer(request.group,request.data)
         if s.is_valid():
             admin_group = s.save()
+            admin_group.user.groups_task.add(request.group)
         else:
             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.CreateAdminResponseGroupSerializer(admin_group).data)

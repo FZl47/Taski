@@ -27,18 +27,18 @@ class TaskList(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated,permissions_account.IsMemberShip)
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
 
     def get(self, request, group_id):
         group = request.group
         user = request.user
         tasks = user.task_set.filter(group__id__in=[group.id])
-        is_completed_param = request.query_params.get('is_completed','all')
+        is_completed_param = request.query_params.get('is_completed', 'all')
         match is_completed_param:
             case True:
-                tasks = tasks.filter(is_completed=True)
+                tasks.filter(is_completed=True)
             case False:
-                tasks = tasks.filter(is_completed=False)
+                tasks.filter(is_completed=False)
             case _:
                 # default all tasks
                 pass
@@ -148,39 +148,6 @@ class UpdateTask(SwaggerMixin, APIView):
         return Response(serializers.UpdateTaskSerializer(task_obj).data)
 
 
-# class UpdateUsersTask(SwaggerMixin, APIView):
-#     SWAGGER = {
-#         'tags': ['Task'],
-#         'methods': {
-#             'put': {
-#                 'title': 'Update Users Task',
-#                 'description': 'update users task',
-#                 'request_body': serializers.UpdateUsersTaskSerializer,
-#                 'responses': {
-#                     200: serializers.UpdateUsersTaskSerializer
-#                 },
-#             },
-#         }
-#     }
-#
-#     permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
-#
-#     def put(self, request, group_id, task_id):
-#         task_obj = get_object_or_none(models.Task, id=task_id, group_id=group_id)
-#         if task_obj is None:
-#             raise exceptions.NotFound(['Task not found'])
-#         s = serializers.UpdateUsersTaskSerializer(instance=task_obj, data=request.data)
-#         if s.is_valid() is False:
-#             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
-#         # check all users are members of the group
-#         users = s.validated_data['users']
-#         users_in_group = task_obj.group.user_set.filter(email__in=users).count() == len(users)
-#         if users_in_group is False:
-#             raise exceptions.PermissionDenied(['Cannot assign a task to user|users not a member of the group'])
-#         task_obj = s.update(task_obj, s.validated_data)
-#         return Response(serializers.UpdateUsersTaskSerializer(task_obj).data)
-
-
 class CreateTaskFile(SwaggerMixin, APIView):
     SWAGGER = {
         'tags': ['Task'],
@@ -232,7 +199,7 @@ class UpdateTaskFile(SwaggerMixin, APIView):
         if task_file_obj is None:
             raise exceptions.NotFound(['Task file not found'])
         if s.is_valid():
-            s.update(task_file_obj,s.validated_data)
+            s.update(task_file_obj, s.validated_data)
         else:
             raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
         return Response(serializers.UpdateTaskFileAttachResponseSerializer(task_file_obj).data)
@@ -252,7 +219,7 @@ class GetTaskFile(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated,permissions_account.IsMemberShip)
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
     parser_classes = (MultiPartParser,)
 
     def get(self, request, group_id, task_id, task_file_id):
@@ -276,10 +243,10 @@ class DeleteTaskFile(SwaggerMixin, APIView):
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup)
 
     def delete(self, request, group_id, task_id, task_file_id):
-        task_file_obj = get_object_or_none(models.TaskFile,id=task_file_id,task_id=task_id,task__group__id=group_id)
+        task_file_obj = get_object_or_none(models.TaskFile, id=task_file_id, task_id=task_id, task__group__id=group_id)
         if task_file_obj:
             task_file_obj.delete()
         else:
@@ -294,15 +261,106 @@ class CreateTaskResponse(SwaggerMixin, APIView):
             'post': {
                 'title': 'Create Task Response',
                 'description': 'create task response',
+                'request_body': serializers.CreateTaskResponseRequestBodySerializer,
                 'responses': {
-                    200: serializers.CreateTaskResponseSerializer
+                    200: serializers.CreateTaskResponseResponseSerializer
                 },
             },
         }
     }
 
-    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsOwnerOrAdminGroup,)
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
 
-    def post(self, request,task_id):
-        # TODO : should be complete
-        pass
+    def post(self, request, group_id, task_id):
+        data = request.data.copy()
+        data.update({
+            'task': task_id,
+            'user': request.user.id
+        })
+        s = serializers.CreateTaskResponseSerializer(data=data)
+        if s.is_valid():
+            task_response_obj = s.save()
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.CreateTaskResponseResponseSerializer(task_response_obj).data)
+
+
+class UpdateTaskResponse(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'put': {
+                'title': 'Update Task Response',
+                'description': 'update task response',
+                'request_body': serializers.UpdateTaskResponseSerializer,
+                'responses': {
+                    200: serializers.UpdateTaskResponseSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
+
+    def put(self, request, group_id, task_id, task_response_id):
+        task_response_obj = get_object_or_none(models.TaskResponse,id=task_response_id, task_id=task_id, task__group__id=group_id)
+        if task_response_obj is None:
+            raise exceptions.NotFound(['Task response object not found'])
+        s = serializers.UpdateTaskResponseSerializer(data=request.data)
+        if s.is_valid():
+            task_response_obj = s.update(task_response_obj,s.validated_data)
+        else:
+            raise exceptions.BadRequest(exceptions.get_errors_serializer(s))
+        return Response(serializers.UpdateTaskResponseSerializer(task_response_obj).data)
+
+
+class GetTaskResponse(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'get': {
+                'title': 'Get Task Response',
+                'description': 'get task response',
+                'responses': {
+                    200: serializers.GetTaskResponseSerializer(many=True)
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
+
+    def get(self, request, group_id, task_id, task_response_id):
+        task_response_objs = models.TaskResponse.objects.filter(id=task_response_id, task_id=task_id,
+                                                                task__group__id=group_id).prefetch_related(
+            'taskfileresponse_set')
+        return Response(serializers.GetTaskResponseSerializer(task_response_objs, many=True).data)
+
+
+class DeleteTaskResponse(SwaggerMixin, APIView):
+    SWAGGER = {
+        'tags': ['Task'],
+        'methods': {
+            'delete': {
+                'title': 'Delete Task Response',
+                'description': 'delete task response',
+                'responses': {
+                    200: serializers.DeleteTaskResponseSerializer
+                },
+            },
+        }
+    }
+
+    permission_classes = (permissions_base.IsAuthenticated, permissions_account.IsMemberShip)
+
+    def delete(self, request, group_id, task_id, task_response_id):
+        task_response_obj = get_object_or_none(models.TaskResponse, id=task_response_id, task_id=task_id,
+                                               task__group__id=group_id)
+        if task_response_obj is None:
+            raise exceptions.NotFound(['Task response object not found'])
+        response = serializers.DeleteTaskResponseSerializer(task_response_obj).data
+        task_response_obj.delete()
+        return Response(response)
+
+
+
