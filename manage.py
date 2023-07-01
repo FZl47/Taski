@@ -5,7 +5,7 @@ import sys
 
 STAGE = {
     'dev': 'config.settings.development',  # Development
-    'prod': 'config.settings.development'  # Production
+    'prod': 'config.settings.production'  # Production
 }
 
 SETTINGS = STAGE['dev']
