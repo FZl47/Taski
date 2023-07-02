@@ -10,7 +10,7 @@ class SwaggerMixin(object):
     pass
 
 
-def _init():
+def init():
     _VIEWS = SwaggerMixin.__subclasses__()
     for view in _VIEWS:
         SWAGGER = view.SWAGGER
