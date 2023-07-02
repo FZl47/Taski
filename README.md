@@ -2,6 +2,13 @@
 
 ## TODO
 - [ ] Refactor name views and swagger
+- [ ] Set Swagger views in "swagger.py" file (task,account) apps
+- [ ] Inherit all serializer from "core.serializers.BaseSerializer"
+- [ ] Refactor Serializers  
+- [ ] Remove some query param from urls(shorten) 
+- [ ] Fix all routes action by method (not name)
+  - items:GET &#9745;
+  - items-get:GET &#x2612;
 
 
 ## DRF-YASG
