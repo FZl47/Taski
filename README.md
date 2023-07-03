@@ -4,8 +4,10 @@
 - [ ] Refactor name views and swagger
 - [ ] Set Swagger views in "swagger.py" file (task,account) apps
 - [ ] Inherit all serializer from "core.serializers.BaseSerializer"
-- [ ] Refactor Serializers  
-- [ ] Remove some query param from urls(shorten) 
+- [ ] Fix and Refactor Serializers  
+- [ ] Fix parser views(BaseView) 
+- [ ] Fix Tests   
+- [ ] Fix routers(urls)
 - [ ] Fix all routes action by method (not name)
   - items:GET &#9745;
   - items-get:GET &#x2612;
