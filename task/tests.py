@@ -1,4 +1,3 @@
-import factory
 import datetime
 import requests
 import io
@@ -24,6 +23,35 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
             self._GROUP = req
         return self._GROUP
 
+    def test_task_create(self):
+        if self._TASK is None:
+            self.authenticate_user(self.create_user())
+            group_id = self.create_group().json()['data']['id']
+            req = self.client.get(reverse('account:group_users', args=(group_id,)))
+            self.assertEqual(req.status_code, 200)
+            user_id = req.json()['data'][0]['id']
+            data = {
+                'title': 'Task Test',
+                'user': user_id
+            }
+            req = self.client.post(reverse('task:task_create', args=(group_id,)), data=data)
+            self.assertEqual(req.status_code, 200)
+            self._TASK = req
+        return self._TASK
+
+    def test_task_update(self):
+        task_id = self.test_task_create().json()['data']['id']
+        group_id = self.create_group().json()['data']['id']
+        data = {
+            'title': 'title task updated !',
+            'timeleft': get_datetime() + datetime.timedelta(minutes=10),
+            'label': 'label updated !',
+            'description': 'Description updated !'
+        }
+        req = self.client.put(reverse('task:task_update', args=(group_id, task_id)), data=data)
+        self.assertEqual(req.status_code, 200)
+        return req
+
     def test_task_list(self):
         self.test_task_create()
         self.authenticate_user(self.create_user())
@@ -36,40 +64,20 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
         self.assertEqual(req.status_code, 200)
         return req
 
-    def test_task_create(self):
-        if self._TASK is None:
-            self.authenticate_user(self.create_user())
-            group_id = self.create_group().json()['data']['id']
-            req = self.client.get(reverse('account:group_users', args=(group_id,)))
-            self.assertEqual(req.status_code, 200)
-            user_id = req.json()['data'][0]['id']
-            data = {
-                'title': 'Task Test',
-                'user': user_id
-            }
-            req = self.client.post(reverse('task:create_task', args=(group_id,)), data=data)
-            self.assertEqual(req.status_code, 200)
-            self._TASK = req
-        return self._TASK
+    def test_task_get(self):
+        self.test_task_create()
+        self.authenticate_user(self.create_user())
+        group_id = self.create_group().json()['data']['id']
+        task_id = self.test_task_create().json()['data']['id']
+        req = self.client.get(reverse('task:task_retrieve', args=(group_id, task_id)))
+        self.assertEqual(req.status_code, 200)
+        return req
 
     def test_task_delete(self):
         task_id = self.test_task_create().json()['data']['id']
         group_id = self.create_group().json()['data']['id']
-        req = self.client.delete(reverse('task:delete_task', args=(group_id, task_id)))
+        req = self.client.delete(reverse('task:task_delete', args=(group_id, task_id)))
         self.assertEqual(req.status_code, 200)
-
-    def test_task_update(self):
-        task_id = self.test_task_create().json()['data']['id']
-        group_id = self.create_group().json()['data']['id']
-        data = {
-            'title': 'title task updated !',
-            'timeleft': get_datetime() + datetime.timedelta(minutes=10),
-            'label': 'label updated !',
-            'description': 'Description updated !'
-        }
-        req = self.client.put(reverse('task:update_task', args=(group_id, task_id)), data=data)
-        self.assertEqual(req.status_code, 200)
-        return req
 
     def test_task_file_create(self):
         self.test_task_create()
@@ -86,7 +94,7 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
             'file': file,
             'task': task_user['id']
         }
-        req = self.client.post(reverse('task:create_task_file', args=(group_id,)), data=data)
+        req = self.client.post(reverse('task:task_file_create', args=(group_id,)), data=data)
         self.assertEqual(req.status_code, 200)
         return req
 
@@ -98,55 +106,68 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
             'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Django_logo.svg/640px-Django_logo.svg.png').content
         file = ImageFile(io.BytesIO(file_raw), name='file_new.png')
         data = {
-            'file': file
+            'file': file,
+            'task': task_id
         }
-        req = self.client.put(reverse('task:update_task_file', args=(group_id, task_id, task_file_id)), data=data)
+        req = self.client.put(reverse('task:task_file_update', args=(group_id, task_file_id)), data=data)
+        self.assertEqual(req.status_code, 200)
+
+    def test_task_file_get(self):
+        group_id = self.create_group().json()['data']['id']
+        task_file_id = self.test_task_file_create().json()['data']['id']
+        req = self.client.get(reverse('task:task_file_retrieve', args=(group_id, task_file_id)))
         self.assertEqual(req.status_code, 200)
 
     def test_task_file_delete(self):
         group_id = self.create_group().json()['data']['id']
         task_file_id = self.test_task_file_create().json()['data']['id']
         task_id = self.test_task_create().json()['data']['id']
-        req = self.client.delete(reverse('task:delete_task_file', args=(group_id, task_id, task_file_id)))
+        data = {
+            'task': task_id
+        }
+        req = self.client.delete(reverse('task:task_file_delete', args=(group_id, task_file_id)), data=data)
         self.assertEqual(req.status_code, 200)
 
-    def test_task_file_get(self):
-        group_id = self.create_group().json()['data']['id']
-        task_file_id = self.test_task_file_create().json()['data']['id']
-        task_id = self.test_task_create().json()['data']['id']
-        req = self.client.get(reverse('task:get_task_file', args=(group_id, task_id, task_file_id)))
-        self.assertEqual(req.status_code, 200)
+    # TaskResponse
 
     def test_task_response_create(self):
         group_id = self.create_group().json()['data']['id']
         task_id = self.test_task_create().json()['data']['id']
         data = {
-            'content': 'test content'
+            'content': 'test content',
+            'task': task_id
         }
-        req = self.client.post(reverse('task:create_task_response', args=(group_id, task_id)), data=data)
+        req = self.client.post(reverse('task:task_response_create', args=(group_id,)), data=data)
         self.assertEqual(req.status_code, 200)
         return req
 
     def test_task_response_update(self):
         group_id = self.create_group().json()['data']['id']
-        task_id = self.test_task_create().json()['data']['id']
         task_response_id = self.test_task_response_create().json()['data']['id']
+        task_id = self.test_task_create().json()['data']['id']
         data = {
-            'content': 'test content updated !'
+            'content': 'content updated !',
+            'task': task_id
         }
-        req = self.client.put(reverse('task:update_task_response', args=(group_id, task_id, task_response_id)), data=data)
+        req = self.client.put(reverse('task:task_response_update', args=(group_id, task_response_id)), data=data)
         self.assertEqual(req.status_code, 200)
 
     def test_task_response_get(self):
         group_id = self.create_group().json()['data']['id']
-        task_id = self.test_task_create().json()['data']['id']
         task_response_id = self.test_task_response_create().json()['data']['id']
-        req = self.client.get(reverse('task:get_task_response', args=(group_id, task_id, task_response_id)))
+        task_id = self.test_task_create().json()['data']['id']
+        data = {
+            'task': task_id
+        }
+        req = self.client.get(reverse('task:task_response_retrieve', args=(group_id, task_response_id)), data=data)
         self.assertEqual(req.status_code, 200)
 
     def test_task_response_delete(self):
         group_id = self.create_group().json()['data']['id']
-        task_id = self.test_task_create().json()['data']['id']
         task_response_id = self.test_task_response_create().json()['data']['id']
-        req = self.client.delete(reverse('task:delete_task_response', args=(group_id, task_id, task_response_id)))
+        task_id = self.test_task_create().json()['data']['id']
+        data = {
+            'task': task_id
+        }
+        req = self.client.delete(reverse('task:task_response_delete', args=(group_id, task_response_id)), data=data)
         self.assertEqual(req.status_code, 200)
