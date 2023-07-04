@@ -23,3 +23,4 @@ class PublicConfig(AppConfig):
             # 1: Quit the server
             # 2: run "python manage.py migrate" command
             pass
+
