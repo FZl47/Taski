@@ -1,36 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework import permissions
 from core.response import Response
-from core.mixins.view.swagger import  SwaggerMixin
+from core.swagger.views import SwaggerMixin
+from core.views import BaseView
+from . import swagger
 
 
-
-class Index(SwaggerMixin, APIView):
-
-    SWAGGER = {
-        'tags': ['Test Health'],
-        'methods': {
-            'post': {
-                'title': 'Test health project POST',
-                'description':'',
-                'responses': {
-                    200:"",
-                },
-            },
-            'get': {
-                'title': 'Test health project GET',
-                'description':'',
-                'responses': {
-                    200: "",
-                },
-            },
-
-        }
-    }
+class Index(BaseView,APIView):
+    METHOD_NAMES = ('post','get')
+    SWAGGER = swagger.INDEX
 
     permission_classes = (permissions.AllowAny,)
-
-
     def post(self, request):
         """
             Test view
@@ -42,3 +22,5 @@ class Index(SwaggerMixin, APIView):
             Test view
         """
         return Response('is working ...')
+
+
