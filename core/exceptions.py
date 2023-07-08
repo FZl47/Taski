@@ -136,6 +136,12 @@ class NotFound(Exception):
     default_detail = _execption_detail(status_code, ['Not found'])
 
 
+class NotAvailable(Exception):
+    status_code = status.HTTP_204_NO_CONTENT
+    default_code = "not_available"
+    default_detail = _execption_detail(status_code, ['Not Available'])
+
+
 class UserNotFound(Exception):
     status_code = status.HTTP_404_NOT_FOUND
     default_code = "user_not_found"
