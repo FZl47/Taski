@@ -5,13 +5,11 @@ from . import models
 
 
 class TaskResponseFile:
-    # CREATE view
     class Create(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskResponseFile
             fields = ('id', 'file', 'task_response', 'datetime_created', 'datetime_updated')
 
-    # GET view
     class Get(BaseSerializer, ModelSerializer):
         file = serializers.URLField(source='get_file')
 
@@ -21,7 +19,6 @@ class TaskResponseFile:
 
 
 class TaskFile:
-    # CREATE view
     class CreateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskFile
@@ -34,7 +31,6 @@ class TaskFile:
             model = models.TaskFile
             fields = ('id', 'file', 'task', 'datetime_created', 'datetime_updated')
 
-    # UPDATE view
     class UpdateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskFile
@@ -47,7 +43,6 @@ class TaskFile:
             model = models.TaskFile
             fields = ('id', 'file', 'datetime_updated')
 
-    # GET view
     class Get(BaseSerializer, ModelSerializer):
         file = serializers.URLField(source='get_file')
 
@@ -55,7 +50,6 @@ class TaskFile:
             model = models.TaskFile
             fields = ('id', 'file', 'task', 'datetime_created', 'datetime_updated')
 
-    # DELETE view
     class DeleteRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskFile
@@ -70,7 +64,6 @@ class TaskFile:
 
 
 class TaskResponse:
-    # CREATE view
     class CreateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskResponse
@@ -81,7 +74,6 @@ class TaskResponse:
             model = models.TaskResponse
             fields = '__all__'
 
-    # UPDATE view
     class UpdateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskResponse
@@ -92,7 +84,6 @@ class TaskResponse:
             model = models.TaskResponse
             fields = '__all__'
 
-    # GET view
     class Get(BaseSerializer, ModelSerializer):
         attach = TaskResponseFile.Get(many=True, source='taskresponsefile_set', read_only=True)
 
@@ -100,7 +91,6 @@ class TaskResponse:
             model = models.TaskResponse
             fields = '__all__'
 
-    # DELETE view
     class DeleteRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskResponse
@@ -118,7 +108,6 @@ class TaskResponse:
 
 
 class Task:
-    # CREATE view
     class CreateSwagger(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.Task
@@ -133,7 +122,6 @@ class Task:
         # just for response swagger
         pass
 
-    # UPDATE view
     class UpdateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.Task
@@ -154,7 +142,6 @@ class Task:
     class Update(UpdateRequestBody):
         pass
 
-    # GET view
     class ListRequestParameter(serializers.Serializer):
         SORT_BY_OPTIONS = (
             ('latest', 'default'),
@@ -181,7 +168,6 @@ class Task:
             model = models.Task
             exclude = ('group',)
 
-    # DELETE view
     class DeleteRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.Task
@@ -191,3 +177,6 @@ class Task:
         class Meta:
             model = models.Task
             fields = ('id', 'group')
+
+
+
