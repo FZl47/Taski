@@ -1,16 +1,24 @@
 # Taski
 
 ## TODO
-- [ ] Refactor name views and swagger
+- [x] Refactor name views and swagger
 - [ ] Set Swagger views in "swagger.py" file (task,account) apps
+  - app task &#9745;
+  - app account
 - [ ] Inherit all serializer from "core.serializers.BaseSerializer"
-- [ ] Fix and Refactor Serializers  
-- [ ] Fix parser views(BaseView) 
-- [ ] Fix Tests   
+  - app task &#9745;
+  - app account 
+- [ ] Fix and Refactor Serializers
+  - app task &#9745;
+  - app account
+- [x] Fix parser views(BaseView) 
+- [ ] Fix Tests 
+  - app public &#9745;
+  - app task &#9745;
+  - app account
 - [ ] Fix routers(urls)
-- [ ] Fix all routes action by method (not name)
-  - items:GET &#9745;
-  - items-get:GET &#x2612;
+  - app task &#9745;
+  - app account 
 
 
 ## DRF-YASG
@@ -21,6 +29,11 @@ for Fix some bug in template(**venv/Lib/site-packages/drf_yasg/templates/drf_yas
     .sc-dTSzeu.jlrIPb + div .sc-TtZnY.sc-jHNicF.ehnWxS.imjMKL{
         display:None;
     } 
+
+    .sc-fbIWvP.sc-dvXYtj.JIFSj.ddUyGN{
+            display: none;
+    }
+    
 ```
 ### Add some style in template redoc(better UI)
 ```css
