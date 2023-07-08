@@ -3,7 +3,6 @@ from .swagger.utils import SwaggerBaseView, SwaggerView
 
 class BaseView:
     """
-        Just For (DRY)
         :attribute: VIEW_NAMES
         :attribute: METHOD_NAMES
         :attribute: SWAGGER
@@ -40,7 +39,6 @@ def init_config_base_view():
         method_names = getattr(base_view, 'METHOD_NAMES', None)
         assert not (method_names is None and view_names is None), 'attribute VIEW_NAMES or METHOD_NAMES  must be set'
         assert not (method_names is not None and view_names is not None), 'you can just use one of them (VIEW_NAMES,METHOD_NAMES)'
-
         swagger = getattr(base_view, 'SWAGGER', None)
         if view_names:
             permission_classes_base = getattr(base_view, 'permission_classes', None)
