@@ -5,23 +5,23 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls.static import static
 from rest_framework import permissions
-from core.mixins.view import swagger
+from core.views import init_config_base_view
 
 import test
+
 
 def path(pth, *args, **kwargs):
     return _path(f"{settings.NAME_POINT_API}/{pth}", *args, **kwargs)
 
 
 urlpatterns = [
-    path('', include('account.urls',namespace='account')),
-    path('', include('task.urls',namespace='task')),
-    path('', include('public.urls',namespace='public')),
+    path('', include('account.urls', namespace='account')),
+    path('', include('task.urls', namespace='task')),
+    path('', include('public.urls', namespace='public')),
     path('admin/', admin.site.urls),
 
-    path('test',test.test_view)
+    path('test', test.test_view)
 ]
-
 
 # Drf-yasg - DOC
 schema_view = get_schema_view(
@@ -46,7 +46,5 @@ if settings.DEBUG:
     urlpatterns = urlpatterns + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Init Swagger(Drf-yasg)
-swagger.init()
-
-
+# Init Config Base View
+init_config_base_view()
