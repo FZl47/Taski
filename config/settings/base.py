@@ -3,7 +3,6 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / '.env')
 
@@ -58,7 +57,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 REDIS_CONFIG = {
     'host': os.environ.get('REDIS_HOST'),
     'port': os.environ.get('REDIS_PORT')
@@ -111,11 +109,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'account.auth.jwt.JWTAuthentication',
     ],
-    # 'DEFAULT_PARSER_CLASSES': [
-    #     # 'rest_framework.parsers.JSONParser'
-    #     # 'rest_framework.parsers.FormParser'
-    # ],
-    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
+
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
 AUTH_USER_MODEL = 'account.User'
@@ -182,3 +180,9 @@ Q_CLUSTER = {
 
 MAX_UPLOAD_SIZE = '10485760'  # byte:10 MB
 MAX_UPLOAD_SIZE_LABEL = '10 MB'
+
+
+USER_RESET_PASSWORD_CONF = {
+    "TIMEOUT_RESET_PASSWORD_CODE": 400, # Second
+    "KEY_REDIS_RESET_PASSWORD":"RESET_PASSWORD_{}"
+}
