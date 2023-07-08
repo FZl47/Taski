@@ -8,16 +8,17 @@ class BaseModelMixin(models.Model):
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
+
     class Meta:
         abstract = True
 
     @classmethod
-    def get_obj(cls, model_name='__MODEL__', **kwargs):
+    def get_obj(cls, model_name='__MODEL__', raise_err=True, **kwargs):
         obj = get_object_or_none(cls, **kwargs)
-        if obj is None:
-            if model_name == '__MODEL__':
-                model_name = cls.__name__
-                model_name = ''.join(' ' + x if x.isupper() else x for x in model_name).strip(' ')
+        if model_name == '__MODEL__':
+            model_name = cls.__name__
+            model_name = ''.join(' ' + x if x.isupper() else x for x in model_name).strip(' ')
+        if obj is None and raise_err:
             raise NotFound([f"{model_name} object not found"])
         return obj
 
