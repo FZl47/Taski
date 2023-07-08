@@ -12,12 +12,12 @@ from core.mixins.model.delete_file import RemovePastFileMixin
 
 
 @validators.decorators.validator_image_format
-def upload_image_user(instance,path):
+def upload_image_user(instance, path):
     """
         return src file in media
     """
     path = str(path).split('.')[-1]
-    instance_email = str(instance.email).replace('.','_')
+    instance_email = str(instance.email).replace('.', '_')
     return f"images/users/{instance_email}/{get_random_string(10)}.{path}"
 
 
@@ -44,7 +44,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
+class User(BaseModelMixin, RemovePastFileMixin, AbstractUser):
     """
         Custom User Model
     """
@@ -53,15 +53,15 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
     username = None
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
-    email = models.EmailField(_('email address'), unique = True)
-    image = models.ImageField(upload_to=upload_image_user,null=True,blank=True,max_length=300)
+    email = models.EmailField(_('email address'), unique=True)
+    image = models.ImageField(upload_to=upload_image_user, null=True, blank=True, max_length=300)
     groups_task = models.ManyToManyField('Group')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
 
     def __str__(self):
-       return "{}".format(self.email)
+        return "{}".format(self.email)
 
     def get_token_access(self):
         return str(RefreshToken.for_user(self).access_token)
@@ -76,9 +76,10 @@ class User(BaseModelMixin,RemovePastFileMixin,AbstractUser):
 
 class RequestUserToJoinGroup(BaseModelMixin, models.Model):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    user = models.ForeignKey('User',on_delete=models.CASCADE)
-    group = models.ForeignKey('Group',on_delete=models.CASCADE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE)
     expire_after_days = models.PositiveIntegerField(default=7)
+    is_active = models.BooleanField(default=True)
 
     def is_valid(self):
         now = datetime.datetime.now()
@@ -90,26 +91,31 @@ class RequestUserToJoinGroup(BaseModelMixin, models.Model):
         return f"Request Join To Group - user:{self.user} group:{self.group}"
 
 
-class HistoryRequestUserToJoinGroup(BaseModelMixin, models.Model):
-    user = models.ForeignKey('User',on_delete=models.SET_NULL,null=True,blank=True)
-    admin = models.ForeignKey('GroupAdmin',on_delete=models.CASCADE)
-    group = models.ForeignKey('Group',on_delete=models.CASCADE)
-    datetime_submit = models.DateTimeField(auto_now_add=True)
+
+class HistoryActionGroup(BaseModelMixin, models.Model):
+    title = models.CharField(max_length=200)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE)
+    admin = models.ForeignKey('GroupAdmin', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
+    description = models.TextField(null=True)
+
+    class Meta:
+        ordering = ('-id',)
 
     def __str__(self):
-        return f"History Request Join To Group - user:{self.user} group:{self.group}"
+        return f"#{self.id} History action Group - {self.title[:20]}.."
 
 
-class Group(BaseModelMixin,models.Model):
+class Group(BaseModelMixin, models.Model):
     title = models.CharField(max_length=100)
 
     def __str__(self):
         return self.title
 
 
-class GroupAdmin(BaseModelMixin,models.Model):
-    user = models.ForeignKey('User',on_delete=models.CASCADE)
-    group = models.ForeignKey('Group',on_delete=models.CASCADE)
+class GroupAdmin(BaseModelMixin, models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    group = models.ForeignKey('Group', on_delete=models.CASCADE)
     is_owner = models.BooleanField(default=False)
 
     def __str__(self):
