@@ -142,8 +142,8 @@ Group = {
         'Retrieve': {
             'methods': {
                 'get': {
-                    'title': 'Create Group',
-                    'description': 'create groups to perform tasks',
+                    'title': 'Retrieve Group',
+                    'description': 'get group to perform tasks',
                     'responses': {
                         200: serializers.Group.Get
                     },
@@ -188,6 +188,17 @@ GroupUser = {
                         200: serializers.GroupUser.AcceptRequestJoin
                     },
                 },
+            }
+        },
+        'List':{
+            'methods':{
+                'get':{
+                    'title': 'Group members',
+                    'description': 'get users(memberships) from group',
+                    'responses': {
+                        200: serializers.GroupUser.List,
+                    },
+                }
             }
         },
         'Kick': {
