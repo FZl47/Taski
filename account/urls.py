@@ -23,7 +23,8 @@ urlpatterns = [
     # Group User
     path('groups/<uuid:group_id>/user/add/request',views.GroupUser.RequestAddUser.as_view(),name='request_add_group_user'),
     path('group/request/accept/<uuid:token>',views.GroupUser.AcceptRequestJoin.as_view(),name='accept_request_join_group_user'),
-    path('groups/<uuid:group_id>/user/<uuid:user_id>/delete',views.GroupUser.Kick.as_view(),name='kick_group_user'),
+    path('groups/<uuid:group_id>/users', views.GroupUser.List.as_view(), name='users_group'),
+    path('groups/<uuid:group_id>/users/<uuid:user_id>/delete',views.GroupUser.Kick.as_view(),name='kick_group_user'),
 
     # Group Admin
     path('groups/<uuid:group_id>/admin/create',views.GroupAdmin.Create.as_view(),name='create_group_admin'),
