@@ -27,7 +27,7 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
         if self._TASK is None:
             self.authenticate_user(self.create_user())
             group_id = self.create_group().json()['data']['id']
-            req = self.client.get(reverse('account:group_users', args=(group_id,)))
+            req = self.client.get(reverse('account:users_group', args=(group_id,)))
             self.assertEqual(req.status_code, 200)
             user_id = req.json()['data'][0]['id']
             data = {
