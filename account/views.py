@@ -201,6 +201,7 @@ class GroupUser(BaseView):
     VIEW_NAMES = (
         'RequestAddUser',
         'AcceptRequestJoin',
+        'List',
         'Kick'
     )
     permission_classes_additional = (permissions.IsOwnerOrAdminGroup,)
@@ -239,6 +240,12 @@ class GroupUser(BaseView):
             obj.save()
             return Response(serializers.GroupUser.AcceptRequestJoin(obj).data)
 
+    class List(APIView):
+        def get(self, request, group_id):
+            group = models.Group.get_obj(id=group_id)
+            users = group.user_set.all()
+            return Response(serializers.GroupUser.List(users,many=True).data)
+
     class Kick(APIView):
         def delete(self, request, group_id, user_id):
             group = request.group
@@ -253,8 +260,7 @@ class GroupUser(BaseView):
                 description=f'Kick user #{user.id}|{user.email}'
                             f'from {group.title} by #{admin.id}|{admin.user.email}'
             )
-            response_data = serializers.GroupUser.Kick(user).data
-            return Response(response_data)
+            return Response(serializers.GroupUser.Kick(user).data)
 
 
 class GroupAdmin(BaseView):
