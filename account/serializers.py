@@ -167,6 +167,9 @@ class GroupUser:
             model = models.RequestUserToJoinGroup
             fields = ('user', 'group_title', 'group_id')
 
+    class List(User.GetID):
+        pass
+
     class Kick(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.Group
@@ -204,5 +207,3 @@ class GroupAdmin:
         class Meta:
             model = models.GroupAdmin
             fields = ('group_id',)
-
-
