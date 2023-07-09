@@ -4,21 +4,21 @@
 - [x] Refactor name views and swagger
 - [ ] Set Swagger views in "swagger.py" file (task,account) apps
   - app task &#9745;
-  - app account
+  - app account &#9745;
 - [ ] Inherit all serializer from "core.serializers.BaseSerializer"
   - app task &#9745;
-  - app account 
+  - app account &#9745;
 - [ ] Fix and Refactor Serializers
   - app task &#9745;
-  - app account
+  - app account &#9745;
 - [x] Fix parser views(BaseView) 
 - [ ] Fix Tests 
   - app public &#9745;
   - app task &#9745;
-  - app account
+  - app account &#9745;
 - [ ] Fix routers(urls)
   - app task &#9745;
-  - app account 
+  - app account &#9745;
 
 
 ## DRF-YASG
