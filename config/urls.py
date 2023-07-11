@@ -7,7 +7,6 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from core.views import init_config_base_view
 
-import test
 
 
 def path(pth, *args, **kwargs):
@@ -19,8 +18,6 @@ urlpatterns = [
     path('', include('task.urls', namespace='task')),
     path('', include('public.urls', namespace='public')),
     path('admin/', admin.site.urls),
-
-    path('test', test.test_view)
 ]
 
 # Drf-yasg - DOC
