@@ -1,21 +1,23 @@
+import datetime
 from collections import namedtuple
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from core import validators, exceptions
-from core.models import BaseModelMixin
+from core.models import BaseModel
 from core.utils import get_days_hours_minutes_td, get_datetime
 from core.mixins.model.delete_file import RemovePastFileMixin
 
 
 @validators.decorators.validator_file_format
-def upload_src_task_file(instance, path):
+def upload_src_file(instance, path):
     """
-        return src task file in media
+        return src file by datetime in media
     """
-    path = str(path).split('.')[-1]
-    return f"files/group/{instance.task.group.id}/task/{instance.task.id}/{get_random_string(10)}.{path}"
+    format_file = str(path).split('.')[-1]
+    now = datetime.datetime.now()
+    return f"files/{now.year}/{now.month}/{now.day}/{get_random_string(14)}.{format_file}"
 
 
 class TaskManager(models.Manager):
@@ -30,7 +32,7 @@ class TaskManager(models.Manager):
             raise exceptions.NotFound(['Task not found or is not active'])
 
 
-class Task(BaseModelMixin, models.Model):
+class Task(BaseModel):
     created_by = models.ForeignKey('account.GroupAdmin', on_delete=models.CASCADE)
     group = models.ForeignKey('account.Group', on_delete=models.CASCADE)
     user = models.ForeignKey('account.User', on_delete=models.CASCADE)
@@ -47,10 +49,18 @@ class Task(BaseModelMixin, models.Model):
         return f"#{self.group_id} - {self.title[:30]}"
 
     def is_expired(self):
-        return True  # TODO: should be complete
+        if self.timeleft:
+            now = get_datetime()
+            return True if now >= self.timeleft else False
+        return False
 
     def get_time_late(self):
-        pass  # TODO: should be complete | return: time late after expiration
+        if self.is_expired() is True:
+            now = get_datetime()
+            time_late = now - self.timeleft
+            days, hours, _ = get_days_hours_minutes_td(time_late)
+            return '%s days %s minutes' % (days, hours)
+        return None
 
     def get_time_left(self):
         td = self.timeleft - get_datetime()
@@ -63,24 +73,27 @@ class Task(BaseModelMixin, models.Model):
 
 class FileModelMixin(RemovePastFileMixin, models.Model):
     FIELDS_REMOVE_FILES = ['file']
-    file = models.FileField(upload_to=upload_src_task_file, max_length=300, validators=[validators.limit_file_size],
-                            help_text=f'Size file should not exceed {settings.MAX_UPLOAD_SIZE_LABEL}')
+    file = models.FileField(upload_to=upload_src_file, max_length=3000, validators=[validators.limit_file_size],
+                            help_text=f'size file should not exceed {settings.MAX_UPLOAD_SIZE_LABEL}',null=False)
 
     class Meta:
         abstract = True
 
     def get_file(self):
-        return settings.GET_FULL_HOST(self.file.url)
+        try:
+            return settings.GET_FULL_HOST(self.file.url)
+        except:
+            raise exceptions.NotFound(['File not found'])
 
 
-class TaskFile(BaseModelMixin, FileModelMixin):
+class TaskFile(BaseModel, FileModelMixin):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"ATTACH FILE #{self.id} - {self.task}"
 
 
-class TaskResponse(BaseModelMixin, models.Model):
+class TaskResponse(BaseModel):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     content = models.TextField()
 
@@ -88,8 +101,8 @@ class TaskResponse(BaseModelMixin, models.Model):
         return f"Task Response - #{self.id} - {self.task}"
 
 
-class TaskResponseFile(BaseModelMixin, FileModelMixin):
+class TaskResponseFile(BaseModel, FileModelMixin):
     task_response = models.ForeignKey('TaskResponse', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"# Task File Response - #{self.id} - {self.task_response.task}"
+        return f"Task File Response - #{self.id} - {self.task_response.task}"
