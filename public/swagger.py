@@ -1,5 +1,5 @@
 INDEX = {
-    'tags': ['Test Health'],
+    'tags': ['Test'],
     'methods': {
         'post': {
             'title': 'Test health project POST',
