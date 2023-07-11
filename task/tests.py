@@ -171,3 +171,49 @@ class TaskTest(AuthCreateUserMixin, APITestCase):
         }
         req = self.client.delete(reverse('task:task_response_delete', args=(group_id, task_response_id)), data=data)
         self.assertEqual(req.status_code, 200)
+
+    def test_task_response_file_create(self):
+        group_id = self.create_group().json()['data']['id']
+        task_response_id = self.test_task_response_create().json()['data']['id']
+        file_raw = requests.get(
+            'https://w7.pngwing.com/pngs/159/366/png-transparent-django-python-computer-icons-logo-python-text-label-rectangle.png').content
+        file = ImageFile(io.BytesIO(file_raw), name='file_new.png')
+        data = {
+            'file': file
+        }
+        req = self.client.post(reverse('task:task_response_file_create', args=(group_id, task_response_id)), data=data)
+        self.assertEqual(req.status_code, 200)
+        return req
+
+    def test_task_response_file_update(self):
+        group_id = self.create_group().json()['data']['id']
+        task_response_file_data = self.test_task_response_file_create().json()['data']
+        task_response_id = task_response_file_data['task_response']
+        task_response_file_id = task_response_file_data['id']
+        file_raw = requests.get(
+            'https://www.maxpixel.net/static/photo/1x/Web-Framework-Django-Logo-Django-Project-339744.png').content
+        file = ImageFile(io.BytesIO(file_raw), name='file_new.png')
+        data = {
+            'file': file
+        }
+        req = self.client.put(
+            reverse('task:task_response_file_update', args=(group_id, task_response_id, task_response_file_id)),
+            data=data)
+        self.assertEqual(req.status_code, 200)
+
+    def test_task_response_file_get(self):
+        group_id = self.create_group().json()['data']['id']
+        task_response_file_data = self.test_task_response_file_create().json()['data']
+        task_response_id = task_response_file_data['task_response']
+        task_response_file_id = task_response_file_data['id']
+        req = self.client.get(reverse('task:task_response_file_retrieve', args=(group_id, task_response_id, task_response_file_id)))
+        self.assertEqual(req.status_code, 200)
+
+    def test_task_response_file_delete(self):
+        group_id = self.create_group().json()['data']['id']
+        task_response_file_data = self.test_task_response_file_create().json()['data']
+        task_response_id = task_response_file_data['task_response']
+        task_response_file_id = task_response_file_data['id']
+        req = self.client.delete(
+            reverse('task:task_response_file_delete', args=(group_id, task_response_id, task_response_file_id)))
+        self.assertEqual(req.status_code, 200)
