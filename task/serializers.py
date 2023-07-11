@@ -5,17 +5,35 @@ from . import models
 
 
 class TaskResponseFile:
-    class Create(BaseSerializer, ModelSerializer):
+    class CreateRequestBody(BaseSerializer, ModelSerializer):
         class Meta:
             model = models.TaskResponseFile
-            fields = ('id', 'file', 'task_response', 'datetime_created', 'datetime_updated')
+            fields = ('file',)
 
-    class Get(BaseSerializer, ModelSerializer):
+    class Create(BaseSerializer, ModelSerializer):
         file = serializers.URLField(source='get_file')
 
         class Meta:
             model = models.TaskResponseFile
-            fields = ('file', 'datetime_created', 'datetime_updated')
+            fields = ('id', 'file', 'task_response', 'datetime_created', 'datetime_updated')
+
+    class UpdateRequestBody(CreateRequestBody):
+        pass
+
+    class Update(BaseSerializer, ModelSerializer):
+        file = serializers.URLField(source='get_file')
+
+        class Meta:
+            model = models.TaskResponseFile
+            fields = ('file', 'datetime_updated')
+
+    class Get(Update):
+        pass
+
+    class Delete(BaseSerializer, ModelSerializer):
+        class Meta:
+            model = models.TaskResponseFile
+            fields = ('task_response',)
 
 
 class TaskFile:
@@ -177,6 +195,3 @@ class Task:
         class Meta:
             model = models.Task
             fields = ('id', 'group')
-
-
-
