@@ -44,7 +44,7 @@ def init_config_base_view():
             permission_classes_base = getattr(base_view, 'permission_classes', None)
             permission_classes_additional_base = getattr(base_view, 'permission_classes_additional', None)
             assert permission_classes_base is None or permission_classes_additional_base is None, 'You can just use one of them(permission_classes or permission_classes_additional)'
-            parser_classes = getattr(base_view, 'parser_classes', None)
+            parser_classes_base = getattr(base_view, 'parser_classes', None)
 
             if swagger:
                 SwaggerBaseView.set_config(base_view, swagger)
@@ -72,11 +72,10 @@ def init_config_base_view():
                             permission_classes = list(permission_classes) + list(permission_classes_additional_base)
                             setattr(view, 'permission_classes', permission_classes)
 
-                if parser_classes:
+                if parser_classes_base:
                     use_child_parser = getattr(view, 'use_child_parser', False)
                     if use_child_parser is False:
-                        setattr(view, 'parser_classes', parser_classes)
-
+                        setattr(view, 'parser_classes', parser_classes_base)
         if method_names:
             if swagger:
                 SwaggerView.set_config(base_view, swagger)
