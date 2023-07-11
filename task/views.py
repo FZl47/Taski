@@ -1,6 +1,5 @@
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
-from core.swagger.views import SwaggerMixin
 from core.response import Response
 from core.views import BaseView
 from account import permissions as permissions_account
@@ -131,7 +130,7 @@ class TaskFile(BaseView):
             return Response(response)
 
 
-class TaskResponse(BaseView, SwaggerMixin):
+class TaskResponse(BaseView):
     VIEW_NAMES = ('Create', 'Update', 'Retrieve', 'Delete')
     SWAGGER = swagger.TaskResponse
     permission_classes_additional = (permissions_account.IsMemberShip,)
@@ -170,3 +169,55 @@ class TaskResponse(BaseView, SwaggerMixin):
             response = serializers.TaskResponse.Delete(obj).data
             obj.delete()
             return Response(response)
+
+
+class TaskResponseFile(BaseView):
+    VIEW_NAMES = ('Create', 'Update', 'Retrieve', 'Delete')
+    SWAGGER = swagger.TaskResponseFile
+    permission_classes_additional = (permissions_account.IsMemberShip,)
+    parser_classes = (MultiPartParser,)
+
+    class Create(APIView):
+
+        def post(self, request, group_id, task_response_id):
+            task_response = models.TaskResponse.get_obj(id=task_response_id, task__group_id=group_id)
+            s = serializers.TaskResponseFile.CreateRequestBody(data=request.data)
+            s.is_valid()
+            # file in serializer data is none so using request.data instead it
+            data = request.data
+            task_response_file = models.TaskResponseFile.objects.create(
+                task_response=task_response,
+                file=data['file']
+            )
+            return Response(serializers.TaskResponseFile.Create(task_response_file).data)
+
+    class Update(APIView):
+
+        def put(self, request, group_id, task_response_id, task_response_file_id):
+            s = serializers.TaskResponseFile.UpdateRequestBody(data=request.data)
+            s.is_valid()
+            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                                 task_response_id=task_response_id,
+                                                                 task_response__task__group_id=group_id,
+                                                                 task_response__task__user=request.user)
+            s.update(task_response_file, s.validated_data)
+            return Response(serializers.TaskResponseFile.Update(task_response_file).data)
+
+    class Retrieve(APIView):
+
+        def get(self, request, group_id, task_response_id, task_response_file_id):
+            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                                 task_response_id=task_response_id,
+                                                                 task_response__task__group_id=group_id)
+            return Response(serializers.TaskResponseFile.Get(task_response_file).data)
+
+    class Delete(APIView):
+
+        def delete(self, request, group_id, task_response_id, task_response_file_id):
+            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                                 task_response_id=task_response_id,
+                                                                 task_response__task__group_id=group_id,
+                                                                 task_response__task__user=request.user)
+            response = serializers.TaskResponseFile.Delete(task_response_file)
+            task_response_file.delete()
+            return Response(response.data)
