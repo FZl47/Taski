@@ -118,7 +118,7 @@ TaskFile = {
 }
 
 TaskResponse = {
-    'tags': ['Task'],
+    'tags': ['Task Response'],
     'views': {
         'Create': {
             'methods': {
@@ -168,4 +168,56 @@ TaskResponse = {
             }
         }
     },
+}
+
+TaskResponseFile = {
+    'tags': ['Task Response'],
+    'views': {
+        'Create': {
+            'methods': {
+                'post': {
+                    'title': 'Create Task Response File',
+                    'description': 'create a file for task response',
+                    'request_body': serializers.TaskResponseFile.CreateRequestBody,
+                    'responses': {
+                        200: serializers.TaskResponseFile.Create
+                    }
+                }
+            }
+        },
+        'Update': {
+            'methods': {
+                'put': {
+                    'title': 'Update Task Response File',
+                    'description': 'update task response file',
+                    'request_body': serializers.TaskResponseFile.UpdateRequestBody,
+                    'responses': {
+                        200: serializers.TaskResponseFile.Update
+                    }
+                }
+            }
+        },
+        'Retrieve': {
+            'methods': {
+                'get': {
+                    'title': 'Get Task Response File',
+                    'description': 'get task response file',
+                    'responses': {
+                        200: serializers.TaskResponseFile.Get
+                    }
+                }
+            }
+        },
+        'Delete': {
+            'methods': {
+                'delete': {
+                    'title': 'Delete Task Response File',
+                    'description': 'delete task response file',
+                    'responses': {
+                        200: serializers.TaskResponseFile.Delete
+                    }
+                }
+            }
+        }
+    }
 }
