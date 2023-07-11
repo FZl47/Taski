@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third-party Apps
     'rest_framework',
+    'corsheaders',
     'django_q',
     'drf_yasg',
     'core',
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -109,7 +111,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'account.auth.jwt.JWTAuthentication',
     ],
-
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -166,7 +167,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-# django-q | scheduler
+# django-q | scheduler tasks
 Q_CLUSTER = {
     'workers': 4,
     'timeout': 60,
@@ -178,11 +179,13 @@ Q_CLUSTER = {
     }
 }
 
-MAX_UPLOAD_SIZE = '10485760'  # byte:10 MB
+MAX_UPLOAD_SIZE = '10485760'  # unit is byte :10 MB
 MAX_UPLOAD_SIZE_LABEL = '10 MB'
 
-
 USER_RESET_PASSWORD_CONF = {
-    "TIMEOUT_RESET_PASSWORD_CODE": 400, # Second
-    "KEY_REDIS_RESET_PASSWORD":"RESET_PASSWORD_{}"
+    "TIMEOUT_RESET_PASSWORD_CODE": 400,  # Second
+    "KEY_REDIS_RESET_PASSWORD": "RESET_PASSWORD_{}"
 }
+
+# CORS ORIGINS
+CORS_ALLOW_ALL_ORIGINS = True
