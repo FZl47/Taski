@@ -7,8 +7,8 @@ STAGE = {
     'dev': 'config.settings.development',  # Development
     'prod': 'config.settings.production'  # Production
 }
-
-SETTINGS = STAGE['dev']
+stage_state = os.environ.get('stage_state','dev')
+SETTINGS = STAGE[stage_state]
 
 def main():
     """Run administrative tasks."""
