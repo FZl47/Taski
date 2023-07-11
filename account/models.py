@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from core import exceptions, validators
-from core.models import BaseModelMixin
+from core.models import BaseModel
 from core.mixins.model.delete_file import RemovePastFileMixin
 
 
@@ -44,7 +44,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class User(BaseModelMixin, RemovePastFileMixin, AbstractUser):
+class User(BaseModel, RemovePastFileMixin, AbstractUser):
     """
         Custom User Model
     """
@@ -74,7 +74,7 @@ class User(BaseModelMixin, RemovePastFileMixin, AbstractUser):
             return settings.GET_FULL_HOST(self.image.url)
 
 
-class RequestUserToJoinGroup(BaseModelMixin, models.Model):
+class RequestUserToJoinGroup(BaseModel):
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     group = models.ForeignKey('Group', on_delete=models.CASCADE)
@@ -92,7 +92,7 @@ class RequestUserToJoinGroup(BaseModelMixin, models.Model):
 
 
 
-class HistoryActionGroup(BaseModelMixin, models.Model):
+class HistoryActionGroup(BaseModel):
     title = models.CharField(max_length=200)
     group = models.ForeignKey('Group', on_delete=models.CASCADE)
     admin = models.ForeignKey('GroupAdmin', on_delete=models.SET_NULL, null=True)
@@ -106,14 +106,14 @@ class HistoryActionGroup(BaseModelMixin, models.Model):
         return f"#{self.id} History action Group - {self.title[:20]}.."
 
 
-class Group(BaseModelMixin, models.Model):
+class Group(BaseModel):
     title = models.CharField(max_length=100)
 
     def __str__(self):
         return self.title
 
 
-class GroupAdmin(BaseModelMixin, models.Model):
+class GroupAdmin(BaseModel):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     group = models.ForeignKey('Group', on_delete=models.CASCADE)
     is_owner = models.BooleanField(default=False)
