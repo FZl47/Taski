@@ -3,23 +3,22 @@ from django.db import models
 from core.exceptions import NotFound
 
 
-class BaseModelMixin(models.Model):
+class BaseModel(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
-
 
     class Meta:
         abstract = True
 
     @classmethod
-    def get_obj(cls, model_name='__MODEL__', raise_err=True, **kwargs):
+    def get_obj(cls, label_name='__MODEL__', raise_err=True, **kwargs):
         obj = get_object_or_none(cls, **kwargs)
-        if model_name == '__MODEL__':
-            model_name = cls.__name__
-            model_name = ''.join(' ' + x if x.isupper() else x for x in model_name).strip(' ')
+        if label_name == '__MODEL__':
+            label_name = cls.__name__
+            label_name = ''.join(' ' + x if x.isupper() else x for x in label_name).strip(' ')
         if obj is None and raise_err:
-            raise NotFound([f"{model_name} object not found"])
+            raise NotFound([f"{label_name.lower()} object not found"])
         return obj
 
     @classmethod
