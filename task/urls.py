@@ -23,5 +23,9 @@ urlpatterns = [
     path('<uuid:group_id>/task/responses/<uuid:task_response_id>/delete', views.TaskResponse.Delete.as_view(), name='task_response_delete'),
 
     # Task Response File
-    # path('task/response/file/<uuid:group_id>/<uuid:task_id>/<uuid:task_response_id>/create', views.CreateTaskResponseFile.as_view(), name='create_task_response_file'),
+    path('<uuid:group_id>/task/responses/<uuid:task_response_id>/file/create', views.TaskResponseFile.Create.as_view(), name='task_response_file_create'),
+    path('<uuid:group_id>/task/responses/<uuid:task_response_id>/files/<uuid:task_response_file_id>/update', views.TaskResponseFile.Update.as_view(), name='task_response_file_update'),
+    path('<uuid:group_id>/task/responses/<uuid:task_response_id>/files/<uuid:task_response_file_id>', views.TaskResponseFile.Retrieve.as_view(), name='task_response_file_retrieve'),
+    path('<uuid:group_id>/task/responses/<uuid:task_response_id>/files/<uuid:task_response_file_id>/delete', views.TaskResponseFile.Delete.as_view(), name='task_response_file_delete'),
 ]
+
