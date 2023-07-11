@@ -61,3 +61,5 @@ def random_num(n=6):
         create random number
     """
     return ''.join(random.choices('123456789', k=n))
+
+
