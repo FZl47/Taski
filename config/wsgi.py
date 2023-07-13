@@ -11,7 +11,13 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+STAGE = {
+    'dev': 'config.settings.development',  # Development
+    'prod': 'config.settings.production'  # Production
+}
+stage_state = os.environ.get('stage_state','dev')
+SETTINGS = STAGE[stage_state]
 
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', SETTINGS)
 
 application = get_wsgi_application()
