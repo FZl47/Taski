@@ -212,7 +212,6 @@ class TaskResponseFile(BaseView):
             return Response(serializers.TaskResponseFile.Get(task_response_file).data)
 
     class Delete(APIView):
-
         def delete(self, request, group_id, task_response_id, task_response_file_id):
             task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
                                                                  task_response_id=task_response_id,
