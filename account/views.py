@@ -111,6 +111,10 @@ class User(BaseView):
     class ResetPasswordCode(APIView):
         permission_classes = (permissions_base.AllowAny,)
 
+        def get_object(self,data):
+            email = data['email']
+            return models.User.get_obj(email=email, raise_err=False)
+
         def post(self, request):
             """
                 This endpoint get code reset
@@ -118,8 +122,9 @@ class User(BaseView):
             """
             s = serializers.User.ResetPasswordCodeRequestBody(data=request.data)
             s.is_valid()
-            email = s.validated_data['email']
-            code = s.validated_data['code']
+            data = s.validated_data
+            email = data['email']
+            code = data['code']
             key_redis = USER_RESET_PASSWORD_CONF['KEY_REDIS_RESET_PASSWORD'].format(email)
             # Check the code has been sent to this email or not
             code_redis = redis_py.get_value(key_redis)
@@ -133,12 +138,12 @@ class User(BaseView):
                 # codes reset not match
                 raise exceptions.InvalidCode
 
-            user = models.User.get_obj(email=email, raise_err=False)
+            user = self.get_object(data)
             if user is None:
                 # user not found
                 raise exceptions.UserNotFound(['User not found with this email'])
 
-            s.update(user, s.validated_data)
+            s.update(user, data)
             # remove code in redis
             redis_py.remove_key(key_redis)
             return Response({'message': 'Your password has been successfully changed'})
@@ -181,13 +186,19 @@ class Group(BaseView):
             return Response(serializers.Group.Create(group).data)
 
     class Retrieve(APIView):
+
+        def get_object(self):
+            group_id = self.kwargs['group_id']
+            return models.Group.get_obj(id=group_id)
+
         def get(self, request, group_id):
-            group = models.Group.get_obj(id=group_id)
+            group = self.get_object()
             return Response(serializers.Group.Get(group).data)
 
     class Delete(APIView):
         use_child_permission = True
         permission_classes_additional = (permissions.IsOwnerGroup,)
+
 
         def delete(self, request, group_id):
             # get group from user by "permissions.IsOwnerGroup"
@@ -208,12 +219,16 @@ class GroupUser(BaseView):
     SWAGGER = swagger.GroupUser
 
     class RequestAddUser(APIView):
+
+        def get_object(self, data):
+            return models.User.get_obj(email=data['email'])
+
         def post(self, request, group_id):
             group = request.group
             s = serializers.GroupUser.AddUserRequestBody(data=request.data)
             s.is_valid()
-            email = s.data['email']
-            user = models.User.get_obj(email=email)
+            data = s.data
+            user = self.get_object(data)
             models.RequestUserToJoinGroup.objects.create(user=user, group=group)
             models.HistoryActionGroup.objects.create(
                 title='Request Join',
@@ -221,18 +236,23 @@ class GroupUser(BaseView):
                 group=group,
                 admin=request.admin
             )
-            return Response(serializers.GroupUser.AddUser({'message':'Request join to group sent'}).data)
+            return Response(serializers.GroupUser.AddUser({'message': 'Request join to group sent'}).data)
 
     class AcceptRequestJoin(APIView):
         use_child_permission = True
         permission_classes = (permissions_base.AllowAny,)
 
-        def get(self, request, token):
+        def get_object(self):
+            token = self.kwargs['token']
             obj = models.RequestUserToJoinGroup.get_obj(token=token)
             if obj.is_active is False:
                 raise exceptions.UserNotFound(['Request Join object is not active'])
             if obj.is_valid() is False:
                 raise exceptions.InvalidField(['Token is expired!'])
+            return obj
+
+        def get(self, request, token):
+            obj = self.get_object()
             user = request.user
             group = request.group
             user.groups_task.add(group)
@@ -241,16 +261,27 @@ class GroupUser(BaseView):
             return Response(serializers.GroupUser.AcceptRequestJoin(obj).data)
 
     class List(APIView):
+
+        def get_object(self):
+            group_id = self.kwargs['group_id']
+            return models.Group.get_obj(id=group_id)
+
         def get(self, request, group_id):
-            group = models.Group.get_obj(id=group_id)
+            group = self.get_object()
             users = group.user_set.all()
-            return Response(serializers.GroupUser.List(users,many=True).data)
+            return Response(serializers.GroupUser.List(users, many=True).data)
 
     class Kick(APIView):
+
+        def get_object(self):
+            user_id = self.kwargs['user_id']
+            group = self.request.group
+            return models.User.get_obj(id=user_id, groups_task__in=[group.id])
+
         def delete(self, request, group_id, user_id):
             group = request.group
             admin = request.admin
-            user = models.User.get_obj(id=user_id, groups_task__in=[group.id])
+            user = self.get_object()
             user.groups_task.remove(group)
             models.HistoryActionGroup.objects.create(
                 title=f'Kick user',
@@ -283,18 +314,26 @@ class GroupAdmin(BaseView):
     class List(APIView):
         use_child_permission = True
         permission_classes = (permissions_base.IsAuthenticated,)
+
+        def get_object(self):
+            group_id = self.kwargs['group_id']
+            return models.Group.get_obj(id=group_id)
+
         def get(self, request, group_id):
-            group = models.Group.get_obj(id=group_id)
+            group = self.get_object()
             return Response(serializers.GroupAdmin.Get(group.admins, many=True).data)
 
     class Delete(APIView):
         use_child_permission = True
         permission_classes = (permissions_base.IsAuthenticated, permissions.IsOwnerGroup)
 
+        def get_object(self):
+            admin_id = self.kwargs['admin_id']
+            group_id = self.kwargs['group_id']
+            return models.GroupAdmin.get_obj(id=admin_id, group__id=group_id, is_owner=False)
+
         def delete(self, request, group_id, admin_id):
             group = request.group
-            admin = models.GroupAdmin.get_obj(id=admin_id, group__id=group_id, is_owner=False)
+            admin = self.get_object()
             group.admins.remove(admin)
             return Response(serializers.GroupAdmin.Kick(admin).data)
-
-

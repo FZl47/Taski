@@ -24,8 +24,15 @@ class Task(BaseView):
             return Response(s.data)
 
     class Update(APIView):
+
+        def get_object(self):
+            task_id = self.kwargs['task_id']
+            group_id = self.kwargs['group_id']
+            admin = self.request.admin
+            return models.Task.get_obj(id=task_id, group_id=group_id, created_by=admin)
+
         def put(self, request, group_id, task_id):
-            obj = models.Task.get_obj(id=task_id, group_id=group_id, created_by=request.admin)
+            obj = self.get_object()
             s = serializers.Task.UpdateRequestBody(instance=obj, data=request.data)
             s.is_valid()
             obj = s.update(obj, s.validated_data)
@@ -65,11 +72,22 @@ class Task(BaseView):
         use_child_permission = True
         permission_classes_additional = (permissions_account.IsMemberShip,)
 
+        def get_object(self):
+            task_id = self.kwargs['task_id']
+            group_id = self.kwargs['group_id']
+            return models.Task.get_obj(id=task_id, group_id=group_id)
+
         def get(self, request, group_id, task_id):
-            obj = models.Task.get_obj(id=task_id, group_id=group_id)
+            obj = self.get_object()
             return Response(serializers.Task.Get(obj).data)
 
     class Delete(APIView):
+
+        def get_object(self, data):
+            task_id = self.kwargs['task_id']
+            admin = self.request.admin
+            return models.Task.get_obj(id=task_id, group=data['group'], created_by=admin)
+
         def delete(self, request, group_id, task_id):
             data = {
                 'group': group_id,
@@ -77,7 +95,7 @@ class Task(BaseView):
             s = serializers.Task.DeleteRequestBody(data=data)
             s.is_valid()
             data = s.validated_data
-            obj = models.Task.get_obj(id=task_id, group=data['group'], created_by=request.admin)
+            obj = self.get_object(data)
             response = serializers.Task.Delete(obj).data
             obj.delete()
             return Response(response)
@@ -99,13 +117,19 @@ class TaskFile(BaseView):
 
     class Update(APIView):
 
+        def get_object(self, data):
+            task_file_id = self.kwargs['task_file_id']
+            group_id = self.kwargs['group_id']
+            admin = self.request.admin
+            return models.TaskFile.get_obj(id=task_file_id, task=data['task'], task__group__id=group_id,
+                                           task__created_by=admin)
+
         def put(self, request, group_id, task_file_id):
             s = serializers.TaskFile.UpdateRequestBody(data=request.data)
             s.is_valid()
             data = s.validated_data
             # Only admin who created task can update task file
-            obj = models.TaskFile.get_obj(id=task_file_id, task=data['task'], task__group__id=group_id,
-                                          task__created_by=request.admin)
+            obj = self.get_object(data)
             s.update(obj, s.validated_data)
             return Response(serializers.TaskFile.Update(obj).data)
 
@@ -113,18 +137,30 @@ class TaskFile(BaseView):
         use_child_permission = True
         permission_classes_additional = (permissions_account.IsMemberShip,)
 
+        def get_object(self):
+            task_file_id = self.kwargs['task_file_id']
+            group_id = self.kwargs['group_id']
+            return models.TaskFile.get_obj(id=task_file_id, task__group__id=group_id)
+
         def get(self, request, group_id, task_file_id):
-            obj = models.TaskFile.get_obj(id=task_file_id, task__group__id=group_id)
+            obj = self.get_object()
             return Response(serializers.TaskFile.Get(obj).data)
 
     class Delete(APIView):
+
+        def get_object(self, data):
+            task_file_id = self.kwargs['task_file_id']
+            group_id = self.kwargs['group_id']
+            admin = self.request.admin
+            return models.TaskFile.get_obj(id=task_file_id, task=data['task'],
+                                           task__group__id=group_id, task__created_by=admin)
+
         def delete(self, request, group_id, task_file_id):
             s = serializers.TaskFile.DeleteRequestBody(data=request.data)
             s.is_valid()
             # Only admin who created task can delete task file
             data = s.validated_data
-            obj = models.TaskFile.get_obj(id=task_file_id, task=data['task'],
-                                          task__group__id=group_id, task__created_by=request.admin)
+            obj = self.get_object(data)
             response = serializers.TaskFile.Delete(obj).data
             obj.delete()
             return Response(response)
@@ -143,29 +179,50 @@ class TaskResponse(BaseView):
             return Response(serializers.TaskResponse.Create(obj).data)
 
     class Update(APIView):
+        def get_object(self, data):
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            user = self.request.user
+            return models.TaskResponse.get_obj(id=task_response_id, task=data['task'],
+                                               task__group__id=group_id, task__user=user)
+
         def put(self, request, group_id, task_response_id):
             s = serializers.TaskResponse.UpdateRequestBody(data=request.data)
             s.is_valid()
             data = s.validated_data
-            obj = models.TaskResponse.get_obj(id=task_response_id, task=data['task'],
-                                              task__group__id=group_id, task__user=request.user)
+            obj = self.get_object(data)
             s.update(obj, s.validated_data)
             return Response(serializers.TaskResponse.Update(obj).data)
 
     class Retrieve(APIView):
+
+        def get_object(self):
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            return models.TaskResponse.get_obj(id=task_response_id,
+                                               task__group__id=group_id)
+
         def get(self, request, group_id, task_response_id):
-            obj = models.TaskResponse.get_obj(id=task_response_id,
-                                              task__group__id=group_id)
+            obj = self.get_object()
             return Response(serializers.TaskResponse.Get(obj).data)
 
     class Delete(APIView):
+
+        def get_object(self, data):
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            user = self.request.user
+            return models.TaskResponse.get_obj(id=task_response_id,
+                                               task=data['task'],
+                                               task__group_id=group_id,
+                                               task__user=user)
+
         def delete(self, request, group_id, task_response_id):
             s = serializers.TaskResponse.DeleteRequestBody(data=request.data)
             s.is_valid()
             data = s.validated_data
             # Only user who created task response can delete it
-            obj = models.TaskResponse.get_obj(id=task_response_id, task=data['task'],
-                                              task__group__id=group_id, task__user=request.user)
+            obj = self.get_object(data)
             response = serializers.TaskResponse.Delete(obj).data
             obj.delete()
             return Response(response)
@@ -193,30 +250,51 @@ class TaskResponseFile(BaseView):
 
     class Update(APIView):
 
+        def get_object(self):
+            task_response_file_id = self.kwargs['task_response_file_id']
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            user = self.request.user
+            return models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                   task_response_id=task_response_id,
+                                                   task_response__task__group_id=group_id,
+                                                   task_response__task__user=user)
+
         def put(self, request, group_id, task_response_id, task_response_file_id):
             s = serializers.TaskResponseFile.UpdateRequestBody(data=request.data)
             s.is_valid()
-            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
-                                                                 task_response_id=task_response_id,
-                                                                 task_response__task__group_id=group_id,
-                                                                 task_response__task__user=request.user)
+            task_response_file = self.get_object()
             s.update(task_response_file, s.validated_data)
             return Response(serializers.TaskResponseFile.Update(task_response_file).data)
 
     class Retrieve(APIView):
 
+        def get_object(self):
+            task_response_file_id = self.kwargs['task_response_file_id']
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            return models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                   task_response_id=task_response_id,
+                                                   task_response__task__group_id=group_id)
+
         def get(self, request, group_id, task_response_id, task_response_file_id):
-            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
-                                                                 task_response_id=task_response_id,
-                                                                 task_response__task__group_id=group_id)
+            task_response_file = self.get_object()
             return Response(serializers.TaskResponseFile.Get(task_response_file).data)
 
     class Delete(APIView):
+
+        def get_object(self):
+            task_response_file_id = self.kwargs['task_response_file_id']
+            task_response_id = self.kwargs['task_response_id']
+            group_id = self.kwargs['group_id']
+            user = self.request.user
+            return models.TaskResponseFile.get_obj(id=task_response_file_id,
+                                                   task_response_id=task_response_id,
+                                                   task_response__task__group_id=group_id,
+                                                   task_response__task__user=user)
+
         def delete(self, request, group_id, task_response_id, task_response_file_id):
-            task_response_file = models.TaskResponseFile.get_obj(id=task_response_file_id,
-                                                                 task_response_id=task_response_id,
-                                                                 task_response__task__group_id=group_id,
-                                                                 task_response__task__user=request.user)
+            task_response_file = self.get_object()
             response = serializers.TaskResponseFile.Delete(task_response_file)
             task_response_file.delete()
             return Response(response.data)
