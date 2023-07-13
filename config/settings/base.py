@@ -60,8 +60,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 REDIS_CONFIG = {
-    'host': os.environ.get('REDIS_HOST'),
-    'port': os.environ.get('REDIS_PORT')
+    'host': os.environ.get('REDIS_HOST','localhost'),
+    'port': os.environ.get('REDIS_PORT','6379')
 }
 
 # Password validation
