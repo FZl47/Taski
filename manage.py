@@ -7,7 +7,7 @@ STAGE = {
     'dev': 'config.settings.development',  # Development
     'prod': 'config.settings.production'  # Production
 }
-stage_state = os.environ.get('stage_state','dev')
+stage_state = os.environ.get('STAGE_STATE','dev')
 SETTINGS = STAGE[stage_state]
 
 def main():
