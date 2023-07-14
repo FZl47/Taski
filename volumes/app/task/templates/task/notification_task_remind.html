@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task timeleft remind</title>
+    <style>
+        h5 {
+            text-align: center;
+        }
+
+        label {
+            font-size: 75%;
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+        }
+
+        .time-left-detail {
+            text-align: center;
+            width: 90%;
+            max-width: 300px;
+            display: block;
+            margin: auto;
+            border: 1px solid #bbb;
+            border-radius: 15px;
+            background: #f3f3f3;
+        }
+
+        .time-left-detail > div {
+            display: inline-block;
+            border-radius: 7px;
+            background: #1d1d1d;
+            color: #f0f0f0;
+            margin: 3px;
+            padding: 5px;
+            width: 65px;
+        }
+
+        .time-left-detail > div p{
+            font-size: 110%;
+        }
+
+    </style>
+</head>
+<body>
+<h3>Hello, dear {{ task.user.first_name }}</h3>
+{% if type_period_time != 'expired' %}
+    <p>timeleft for task {{ task.title }} from group : <b>{{ task.group.title }}</b></p>
+    <br>
+    <br>
+    <br>
+    {% with task.get_time_left as time_left %}
+        <div class="time-left-detail">
+            <div>
+                <label>Days</label>
+                <p>{{ time_left.days }}</p>
+            </div>
+            <div>
+                <label>Hours</label>
+                <p>{{ time_left.hours }}</p>
+            </div>
+            <div>
+                <label>Minutes</label>
+                <p>{{ time_left.minutes }}</p>
+            </div>
+        </div>
+    {% endwith %}
+{% else %}
+    <h5>Task expired</h5>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Join To Group {{ group.title }}</title>
+    <style>
+    a {
+        padding: 10px 14px;
+        display: block;
+        width: 150px;
+        text-align: center;
+        margin:auto;
+        margin-top: 30px;
+        border-radius: 18px;
+        background: #ee4731;
+        color: #fff!important;
+        text-decoration: none;
+        font-size: 110%;
+    }
+    h2{
+        color: #8122f5;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+    <h2>Request Join To Group <b>{{ group.title }}</b></h2>
+    <hr>
+    <a href="{{ link_request_accept }}">Accept Request</a>
+</body>
+</html>

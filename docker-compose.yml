@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  app:
+    build: ./app
+    container_name: taski_app
+    restart: always
+    expose:
+      - 8000
+    volumes:
+      - './volumes/app:/app'
+
+    environment:
+      - STAGE_STATE=prod # Production or Development|prod or dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=FazelMomeni
+      - DB_NAME=taski_db
+
+  webserver:
+    build: ./webserver
+    container_name: taski_webserver
+    restart: always
+    ports:
+      - '80:80'
+    
+    volumes:
+      - './volumes/assets/static:/webserver/static'
+      - './volumes/assets/media:/webserver/media'
+
+  redis:
+    image: redis
+    container_name: taski_redis
+    restart: always
+    expose:
+      - 6379
+    volumes:
+      - ./volumes/redis:/data redis/redis-stack:latest
+
+    
+  db:
+    image: mysql
+    container_name: taski_db
+    restart: always
+    expose:
+      - 3306
+    
+    volumes:
+      - './volumes/db:/var/lib/mysql'
+
+    environment:
+      - MYSQL_DATABASE=taski_db
+      - MYSQL_ROOT_PASSWORD=FazelMomeni
